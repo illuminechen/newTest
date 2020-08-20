@@ -46,7 +46,7 @@ class LoginScreen extends Component {
     async componentDidMount() {
         await this.getTotalAtt(), await this.orderCal()
     }
-    CalonChange = (event, date) => {
+    CalonChange = async (event, date) => {
         this.setState({
             CalenderValue: date,
             dateStart: moment(date).day("Monday").format("YYYY/MM/DD"),
@@ -57,8 +57,9 @@ class LoginScreen extends Component {
             showCalender: false,
             showSnackbar: true,
         })
-        this.getTotalAtt(),
-        this.orderCal()
+        if (event !== null) {
+            await this.getTotalAtt(), await this.orderCal()
+        }
     }
     DistrictRender = async () => {
         try {
@@ -82,16 +83,15 @@ class LoginScreen extends Component {
         const limit = await this.props.tolAtt.todos.count
         await this.props.totalAttend(year, week, '0', limit, this.state.genderSel, this.state.statusSel,
             this.state.identitySel, this.state.groupSel, this.state.searchData)
-    }
-    orderCal = async () => {
         const year_from = this.state.nowMonth - 6 > 0 ? this.state.nowYear : this.state.nowYear - 1
         const month_from = this.state.nowMonth - 6 > 0 ? this.state.nowMonth - 6 : this.state.nowMonth + 6
         const year_to = this.state.nowMonth - 1 > 0 ? this.state.nowYear : this.state.nowYear - 1
         const month_to = this.state.nowMonth - 1 > 0 ? this.state.nowMonth - 1 : 11 + this.state.nowMonth
-        const limit = await this.props.tolAtt.todos.count
         await this.props.sumAttend(this.state.orderAcord, year_from, month_from, year_to, month_to,
             this.state.searchData, this.state.genderSel, this.state.statusSel, this.state.identitySel,
             this.state.groupSel, limit)
+    }
+    orderCal = async () => {
         const orderCalFetch = await this.props.sumAtt.isFetching
         let tmp = []
         let tmpp = []
@@ -128,8 +128,11 @@ class LoginScreen extends Component {
             const item = await this.props.tolAtt.todos.members
             item.forEach((obj, index) => {
                 toltmp.push({
-                    key: index, member_name: obj['member_name'], member_id: obj['member_id'],
-                    path: obj['path'], church_name: obj['church_name'],
+                    key: index, member_name: obj['member_name'],
+                    member_id: obj['member_id'],
+                    path: obj['path'],
+                    church_name: obj['church_name'],
+                    sex: obj['sex'],
                     sum: tmpp[index],
                     lordT: obj['attend0'] === null ? 0 : 1, prayerM: obj['attend1'] === null ? 0 : 1,
                     homeM: obj['attend2'] === null ? 0 : 1, groupM: obj['attend3'] === null ? 0 : 1,
@@ -141,6 +144,19 @@ class LoginScreen extends Component {
         this.setState({ endsort: toltmp })
         console.log("getTodalAtt", toltmp)
         console.log("getTotalAtt size", (JSON.stringify(toltmp).length) / 1024, "Kbyte")
+    }
+    arrayFilter = () => {
+        const obj = this.state.endsort
+        if (this.state.genderSel === 'm') {
+            if (obj.filter(e => e.sex === '男')) {
+                this.setState({ endsort: obj.filter(e => e.sex === '男') })
+            }
+        } else if (this.state.genderSel === 'f') {
+            if (obj.filter(e => e.sex === '女')) {
+                this.setState({ endsort: obj.filter(e => e.sex === '女') })
+            }
+        }
+        console.log("arrayFilter", this.state.endsort)
     }
     render() {
         const AttFetch = this.props.tolAtt.isFetching
@@ -178,7 +194,7 @@ class LoginScreen extends Component {
                         mode="outlined" icon="plus"
                         labelStyle={[this.props.ftszData.paragraph, this.props.themeData.Ltheme]}
                         style={[this.props.themeData.SthemeB, { borderRadius: 18, elevation: 12, marginHorizontal: 5 }]}
-                        onPress={() => { }}
+                        onPress={() => this.arrayFilter()}
                     >{this.props.lanData.addNew}</Button>
                 </View>
                 <Snackbar
@@ -584,6 +600,5 @@ const styles = StyleSheet.create({
         height: "90%",
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: 200,
     },
 })
