@@ -53,9 +53,12 @@ class LoginScreen extends Component {
             dateEnd: moment(date).day("Monday").day(7).format("YYYY/MM/DD"),
             nowDate: moment(date).format("ww"),
             nowYear: moment(date).format("yyyy"),
+            nowMonth: moment(date).format("MM"),
             showCalender: false,
             showSnackbar: true,
         })
+        this.getTotalAtt(),
+        this.orderCal()
     }
     DistrictRender = async () => {
         try {
