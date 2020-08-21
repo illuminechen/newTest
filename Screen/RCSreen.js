@@ -42,6 +42,7 @@ class LoginScreen extends Component {
         level4Men: false, level4: '', level4id: 0,
         orderAcord: '37', showOrderAcord: this.props.lanData.lordTableFull, orderAcordOp: false,
         endsort: [],
+        flatListRender: '',
     }
     async componentDidMount() {
         await this.getTotalAtt(), await this.orderCal()
@@ -58,7 +59,10 @@ class LoginScreen extends Component {
             showSnackbar: true,
         })
         if (event !== null) {
-            await this.getTotalAtt(), await this.orderCal()
+            await this.getTotalAtt()
+            if (this.state.genderSel !== '') {
+                await this.arrayFilter()
+            } else { await this.orderCal() }
         }
     }
     DistrictRender = async () => {
@@ -142,31 +146,55 @@ class LoginScreen extends Component {
         }
         toltmp.sort((a, b) => { return b.sum - a.sum })
         this.setState({ endsort: toltmp })
-        console.log("getTodalAtt", toltmp)
+        console.log("getTodalAtt", toltmp.filter(e => e.path))
         console.log("getTotalAtt size", (JSON.stringify(toltmp).length) / 1024, "Kbyte")
     }
-    arrayFilter = () => {
-        const obj = this.state.endsort
-        if (this.state.genderSel === 'm') {
-            if (obj.filter(e => e.sex === '男')) {
-                this.setState({ endsort: obj.filter(e => e.sex === '男') })
-            }
-        } else if (this.state.genderSel === 'f') {
-            if (obj.filter(e => e.sex === '女')) {
-                this.setState({ endsort: obj.filter(e => e.sex === '女') })
-            }
+    arrayFilter = async () => {
+        const gender = this.state.genderSel
+        const search = this.state.searchData
+        if (gender === 'm' && search === '') {
+            await this.orderCal()
+            const obj = this.state.endsort
+            this.setState({ endsort: obj.filter(e => e.sex === '男'), alotsOp: false })
+        } else if (gender === 'f' && search === '') {
+            await this.orderCal()
+            const obj = this.state.endsort
+            this.setState({ endsort: obj.filter(e => e.sex === '女'), alotsOp: false })
+        } else if (gender === '' && search) {
+            await this.orderCal()
+            const obj = this.state.endsort
+            this.setState({ endsort: obj.filter(e => e.member_name.includes(tsearch)) })
+        } else if (gender === 'm' && search) {
+            await this.orderCal()
+            const obj = this.state.endsort
+            this.setState({
+                endsort: obj.filter(e =>
+                    e.sex === '男', e.member_name.includes(search)), alotsOp: false
+            })
+        } else if (gender === 'f' && search) {
+            await this.orderCal()
+            const obj = this.state.endsort
+            this.setState({
+                endsort: obj.filter(e =>
+                    e.sex === '女', e.member_name.includes(search)), alotsOp: false
+            })
+        } else if (gender === '' && search === '') {
+            await this.orderCal()
+            this.setState({ alotsOp: false })
         }
+        this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
         console.log("arrayFilter", this.state.endsort)
     }
     render() {
-        const AttFetch = this.props.tolAtt.isFetching
+        const AttFetch = this.props.tolAtt.isFetching || this.props.sumAtt.isFetching
         return (
             <View style={[styles.container, this.props.themeData.MthemeB]}>
                 <View style={styles.searchCard}>
                     <TextInput
                         autoCapitalize='none' placeholderTextColor={this.props.themeData.Stheme}
-                        placeholder={this.props.lanData.search} maxLength={20}
+                        placeholder={this.props.lanData.search} maxLength={20} blurOnSubmit={true}
                         onChangeText={text => this.setState({ searchData: text })}
+                        onBlur={() => this.arrayFilter()}
                         value={this.state.searchData} textAlignVertical="center"
                         style={[
                             this.props.themeData.MthemeB, this.props.ftszData.paragraph,
@@ -194,7 +222,7 @@ class LoginScreen extends Component {
                         mode="outlined" icon="plus"
                         labelStyle={[this.props.ftszData.paragraph, this.props.themeData.Ltheme]}
                         style={[this.props.themeData.SthemeB, { borderRadius: 18, elevation: 12, marginHorizontal: 5 }]}
-                        onPress={() => this.arrayFilter()}
+                        onPress={() => { }}
                     >{this.props.lanData.addNew}</Button>
                 </View>
                 <Snackbar
@@ -216,7 +244,13 @@ class LoginScreen extends Component {
                     <View style={[this.props.themeData.MthemeB, { flex: 1, width: "92%", justifyContent: 'center' }]}>
                         <FlatList
                             ref={(ref) => this.myScroll = ref}
-                            data={this.state.endsort}
+                            data={(this.state.endsort).filter(e => e.key < 250)}
+                            removeClippedSubviews={true}//default false
+                            maxToRenderPerBatch={15}//default 10
+                            updateCellsBatchingPeriod={120}//default 50 misec
+                            initialNumToRender={8}//default 10
+                            windowSize={15}//default 21
+                            extraData={this.state.flatListRender}
                             renderItem={({ item }) => (
                                 <List.Item
                                     title={item.member_name}
@@ -380,7 +414,7 @@ class LoginScreen extends Component {
                         <Dialog.Actions>
                             <Button
                                 labelStyle={[this.props.ftszData.paragraph, this.props.themeData.XLtheme]}
-                                onPress={() => this.setState({ alotsOp: false })}
+                                onPress={() => this.arrayFilter()}
                             >OK</Button>
                         </Dialog.Actions>
                     </Dialog>
