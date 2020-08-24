@@ -18,6 +18,7 @@ import { districtLevel3 } from '../Actions/districtLevel3'
 import { districtLevel4 } from '../Actions/districtLevel4'
 import { totalAttend } from '../Actions/totalAttend'
 import { sumAttend } from '../Actions/sumAttend'
+import { rollCall } from '../Actions/rollCall'
 
 // others
 import DateTimePicker from '@react-native-community/datetimepicker';// default calender picker
@@ -150,37 +151,42 @@ class LoginScreen extends Component {
         console.log("getTotalAtt size", (JSON.stringify(toltmp).length) / 1024, "Kbyte")
     }
     arrayFilter = async () => {
+        if (this.state.statusSel || this.state.identitySel || this.state.groupSel) {
+            await this.getTotalAtt(), await this.orderCal()
+            console.log("recalApi")
+        }
         const gender = this.state.genderSel
         const search = this.state.searchData
-        if (gender === 'm' && search === '') {
+        if (gender === 'm') {
             await this.orderCal()
             const obj = this.state.endsort
-            this.setState({ endsort: obj.filter(e => e.sex === '男'), alotsOp: false })
-        } else if (gender === 'f' && search === '') {
+            if (search) {
+                this.setState({ endsort: obj.filter(e => e.sex === '男', e.member_name.includes(search)) })
+                console.log("male, search", obj.forEach(e => e.path.split(',')[0]))
+            } else {
+                this.setState({ endsort: obj.filter(e => e.sex === '男'), alotsOp: false })
+                console.log("male, ", obj.forEach(e => e.path.split(',')[1]))
+            }
+        } else if (gender === 'f') {
             await this.orderCal()
             const obj = this.state.endsort
-            this.setState({ endsort: obj.filter(e => e.sex === '女'), alotsOp: false })
-        } else if (gender === '' && search) {
+            if (search) {
+                this.setState({ endsort: obj.filter(e => e.sex === '女', e.member_name.includes(search)) })
+                console.log("female, search", obj.forEach(e => e.path.split(',')[2]))
+            } else {
+                this.setState({ endsort: obj.filter(e => e.sex === '女'), alotsOp: false })
+                console.log("female, ", obj.forEach(e => e.path.split(',')[3]))
+            }
+        } else if (gender === '') {
             await this.orderCal()
             const obj = this.state.endsort
-            this.setState({ endsort: obj.filter(e => e.member_name.includes(tsearch)) })
-        } else if (gender === 'm' && search) {
-            await this.orderCal()
-            const obj = this.state.endsort
-            this.setState({
-                endsort: obj.filter(e =>
-                    e.sex === '男', e.member_name.includes(search)), alotsOp: false
-            })
-        } else if (gender === 'f' && search) {
-            await this.orderCal()
-            const obj = this.state.endsort
-            this.setState({
-                endsort: obj.filter(e =>
-                    e.sex === '女', e.member_name.includes(search)), alotsOp: false
-            })
-        } else if (gender === '' && search === '') {
-            await this.orderCal()
-            this.setState({ alotsOp: false })
+            if (search) {
+                this.setState({ endsort: obj.filter(e => e.member_name.includes(search)) })
+                console.log(", search")
+            } else {
+                this.setState({ alotsOp: false })
+                console.log("none")
+            }
         }
         this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
         console.log("arrayFilter", this.state.endsort)
@@ -580,7 +586,7 @@ function mapDispatchToProps(dispatch) {
         ...bindActionCreators({
             toggleLanguage, toogleFontsize, toogleTheme,
             districtLevel2, districtLevel3, districtLevel4,
-            totalAttend, sumAttend,
+            totalAttend, sumAttend, rollCall
         }, dispatch)
     }
 }

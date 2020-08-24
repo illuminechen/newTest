@@ -23,13 +23,23 @@ import { Actions } from 'react-native-router-flux' // pages navigation
 import moment from 'moment' // time
 
 class VisitScreen extends Component {
-    state={
-
+    state = {
+        
     }
-    render(){
-        return(
+    render() {
+        return (
             <View style={[styles.container, this.props.themeData.MthemeB]}>
-
+                <View style={styles.titleCard}>
+                    <IconButton icon="calendar-search" size={25} color={this.props.themeData.SthemeC}
+                        onPress={() => this.setState({ showCalender: true })} style={{ elevation: 15 }}
+                    />
+                    <IconButton icon="tune-vertical" size={25} color={this.props.themeData.SthemeC}
+                        onPress={() => this.setState({ alotsOp: true })} style={{ elevation: 15 }}
+                    />
+                    <IconButton icon="account-group" size={25} color={this.props.themeData.SthemeC}
+                        onPress={this.DistrictRender} style={{ elevation: 15 }}
+                    />
+                </View>
             </View>
         )
     }
@@ -66,5 +76,13 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
+    },
+    titleCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-evenly',
+        width: "90%",
+        marginTop: 25,
+        paddingHorizontal: 4,
     },
 })
