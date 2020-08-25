@@ -147,49 +147,56 @@ class LoginScreen extends Component {
         }
         toltmp.sort((a, b) => { return b.sum - a.sum })
         this.setState({ endsort: toltmp })
-        console.log("getTodalAtt", toltmp.filter(e => e.path))
+        //console.log("getTodalAtt", toltmp.filter(e => e.path))
         console.log("getTotalAtt size", (JSON.stringify(toltmp).length) / 1024, "Kbyte")
     }
     arrayFilter = async () => {
         if (this.state.statusSel || this.state.identitySel || this.state.groupSel) {
-            await this.getTotalAtt(), await this.orderCal()
+            await this.getTotalAtt()
             console.log("recalApi")
         }
+        await this.orderCal()
+        const obj = this.state.endsort
         const gender = this.state.genderSel
         const search = this.state.searchData
+        var temp = []
+        console.log("slpit test", this.state.level2id, this.state.level3id, this.state.level4id)
+        const ttmp = JSON.stringify(this.state.level2id + this.state.level3id + this.state.level4id).length
+        if (ttmp === 1) {
+            this.setState({ districtOp: false })
+        } else if (ttmp === 8) {
+            temp = obj.filter(e => e.path.split(',')[1] === this.state.level2id)
+            this.setState({ endsort: temp, districtOp: false })
+        } else if (ttmp === 11) {
+            temp = obj.filter(e => e.path.split(',')[2] === this.state.level3id)
+            this.setState({ endsort: temp, districtOp: false })
+        } else if (ttmp === 14) {
+            temp = obj.filter(e => e.path.split(',')[3] === this.state.level4id)
+            this.setState({ endsort: temp, districtOp: false })
+        }
         if (gender === 'm') {
-            await this.orderCal()
-            const obj = this.state.endsort
             if (search) {
-                this.setState({ endsort: obj.filter(e => e.sex === '男', e.member_name.includes(search)) })
-                console.log("male, search", obj.forEach(e => e.path.split(',')[0]))
+                temp = obj.filter(e => e.sex === '男')
+                this.setState({ endsort: temp.filter(e => e.member_name.includes(search)), alotsOp: false })
             } else {
                 this.setState({ endsort: obj.filter(e => e.sex === '男'), alotsOp: false })
-                console.log("male, ", obj.forEach(e => e.path.split(',')[1]))
             }
         } else if (gender === 'f') {
-            await this.orderCal()
-            const obj = this.state.endsort
             if (search) {
-                this.setState({ endsort: obj.filter(e => e.sex === '女', e.member_name.includes(search)) })
-                console.log("female, search", obj.forEach(e => e.path.split(',')[2]))
+                temp = obj.filter(e => e.sex === '女')
+                this.setState({ endsort: temp.filter(e => e.member_name.includes(search)), alotsOp: false })
             } else {
                 this.setState({ endsort: obj.filter(e => e.sex === '女'), alotsOp: false })
-                console.log("female, ", obj.forEach(e => e.path.split(',')[3]))
             }
         } else if (gender === '') {
-            await this.orderCal()
-            const obj = this.state.endsort
             if (search) {
-                this.setState({ endsort: obj.filter(e => e.member_name.includes(search)) })
-                console.log(", search")
+                this.setState({ endsort: obj.filter(e => e.member_name.includes(search)), alotsOp: false })
             } else {
                 this.setState({ alotsOp: false })
-                console.log("none")
             }
         }
         this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
-        console.log("arrayFilter", this.state.endsort)
+        //console.log("arrayFilter", this.state.endsort)
     }
     render() {
         const AttFetch = this.props.tolAtt.isFetching || this.props.sumAtt.isFetching
@@ -495,7 +502,7 @@ class LoginScreen extends Component {
                         <Dialog.Actions>
                             <Button
                                 labelStyle={[this.props.ftszData.paragraph, this.props.themeData.XLtheme]}
-                                onPress={() => this.setState({ districtOp: false })}
+                                onPress={() => this.arrayFilter()}
                             >OK</Button>
                         </Dialog.Actions>
                     </Dialog>
@@ -568,7 +575,7 @@ class LoginScreen extends Component {
 }
 
 function mapStateToProps(state) {
-    //console.log("mapstate", state.tolAttReducer)
+    //console.log("mapstate", state.level2Reducer)
     return {
         lanData: state.languageReducer.lanData,
         ftszData: state.fontsizeReducer.ftszData,
