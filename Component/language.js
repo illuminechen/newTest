@@ -23,7 +23,7 @@ export default {
         visitList: 'VisitList',
         setting: 'Setting',
         addNew: 'Add',
-        freList:'Frequent List',
+        freList: 'Frequent List',
 
         // 創建帳號頁面
         withFB: '| Create account by Facebook',
@@ -54,7 +54,8 @@ export default {
         homeMetFull: 'Appintment',
         grouMetFull: 'Group meeting',
         gospVisFull: 'Gospel visiting',
-        
+        clearAll: 'Clear Filter',
+
         //篩選
         gender: 'Select gender',
         status: 'Select status',
@@ -134,7 +135,8 @@ export default {
         homeMetFull: '家聚會',
         grouMetFull: '小排聚會',
         gospVisFull: '福音出訪',
-        
+        clearAll: '清除篩選',
+
         //篩選
         gender: '選擇性別',
         status: '選擇狀態',

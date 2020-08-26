@@ -86,6 +86,7 @@ class LoginScreen extends Component {
         await this.props.totalAttend(year, week, '0', '1', this.state.genderSel, this.state.statusSel,
             this.state.identitySel, this.state.groupSel, this.state.searchData)
         const limit = await this.props.tolAtt.todos.count
+        console.log("limit", limit)
         await this.props.totalAttend(year, week, '0', limit, this.state.genderSel, this.state.statusSel,
             this.state.identitySel, this.state.groupSel, this.state.searchData)
         const year_from = this.state.nowMonth - 6 > 0 ? this.state.nowYear : this.state.nowYear - 1
@@ -153,50 +154,82 @@ class LoginScreen extends Component {
     arrayFilter = async () => {
         if (this.state.statusSel || this.state.identitySel || this.state.groupSel) {
             await this.getTotalAtt()
-            console.log("recalApi")
+            console.log("recalApi", this.state.groupSel)
         }
         await this.orderCal()
         const obj = this.state.endsort
         const gender = this.state.genderSel
         const search = this.state.searchData
         var temp = []
-        console.log("slpit test", this.state.level2id, this.state.level3id, this.state.level4id)
+        var districtemp = []
         const ttmp = JSON.stringify(this.state.level2id + this.state.level3id + this.state.level4id).length
-        if (ttmp === 1) {
-            this.setState({ districtOp: false })
-        } else if (ttmp === 8) {
-            temp = obj.filter(e => e.path.split(',')[1] === this.state.level2id)
-            this.setState({ endsort: temp, districtOp: false })
-        } else if (ttmp === 11) {
-            temp = obj.filter(e => e.path.split(',')[2] === this.state.level3id)
-            this.setState({ endsort: temp, districtOp: false })
-        } else if (ttmp === 14) {
-            temp = obj.filter(e => e.path.split(',')[3] === this.state.level4id)
-            this.setState({ endsort: temp, districtOp: false })
+        if (this.state.level2id || this.state.level3id || this.state.level4id) {
+            if (ttmp === 1) {
+                this.setState({ districtOp: false })
+            } else if (ttmp === 8) {
+                temp = obj.filter(e => e.path.split(',')[1] === this.state.level2id)
+                this.setState({ districtOp: false })
+                districtemp = temp
+            } else if (ttmp === 11) {
+                temp = obj.filter(e => e.path.split(',')[2] === this.state.level3id)
+                this.setState({ districtOp: false })
+                districtemp = temp
+            } else if (ttmp === 14) {
+                temp = obj.filter(e => e.path.split(',')[3] === this.state.level4id)
+                this.setState({ districtOp: false })
+                districtemp = temp
+            }
         }
         if (gender === 'm') {
             if (search) {
-                temp = obj.filter(e => e.sex === '男')
+                districtemp === [] ?
+                    temp = districtemp.filter(e => e.sex === '男')
+                    : temp = obj.filter(e => e.sex === '男')
                 this.setState({ endsort: temp.filter(e => e.member_name.includes(search)), alotsOp: false })
             } else {
-                this.setState({ endsort: obj.filter(e => e.sex === '男'), alotsOp: false })
+                districtemp === [] ?
+                    temp = districtemp.filter(e => e.sex === '男')
+                    : temp = obj.filter(e => e.sex === '男')
+                this.setState({ endsort: temp, alotsOp: false })
             }
         } else if (gender === 'f') {
             if (search) {
-                temp = obj.filter(e => e.sex === '女')
+                districtemp === [] ?
+                    temp = districtemp.filter(e => e.sex === '女')
+                    : temp = obj.filter(e => e.sex === '女')
                 this.setState({ endsort: temp.filter(e => e.member_name.includes(search)), alotsOp: false })
             } else {
-                this.setState({ endsort: obj.filter(e => e.sex === '女'), alotsOp: false })
+                districtemp === [] ?
+                    temp = districtemp.filter(e => e.sex === '女')
+                    : temp = obj.filter(e => e.sex === '女')
+                this.setState({ endsort: temp, alotsOp: false })
             }
         } else if (gender === '') {
             if (search) {
-                this.setState({ endsort: obj.filter(e => e.member_name.includes(search)), alotsOp: false })
-            } else {
-                this.setState({ alotsOp: false })
-            }
+                districtemp === [] ?
+                    temp = districtemp.filter(e => e.member_name.includes(search))
+                    : temp = obj.filter(e => e.member_name.includes(search))
+                this.setState({ endsort: temp, alotsOp: false })
+            } else this.setState({ alotsOp: false })
         }
         this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
-        //console.log("arrayFilter", this.state.endsort)
+    }
+    clearFilter = async () => {
+        this.setState({
+            searchData: '', genderSel: '', statusSel: '', identitySel: '', groupSel: '',
+            level2id: 0, level3id: 0, level4id: 0
+        })
+        await this.getTotalAtt(), await this.orderCal()
+    }
+    rollCall = (id, origAtt) => {
+        origAtt === '0' ?
+            this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '1')
+            : this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '0')
+    }
+    reOrder = async () => {
+        await this.getTotalAtt()
+        await this.orderCal()
+        this.setState({ orderAcordOp: false })
     }
     render() {
         const AttFetch = this.props.tolAtt.isFetching || this.props.sumAtt.isFetching
@@ -232,11 +265,17 @@ class LoginScreen extends Component {
                         onPress={() => this.setState({ orderAcordOp: true })}
                     >{this.state.showOrderAcord}</Button>
                     <Button
-                        mode="outlined" icon="plus"
+                        mode="outlined"
                         labelStyle={[this.props.ftszData.paragraph, this.props.themeData.Ltheme]}
                         style={[this.props.themeData.SthemeB, { borderRadius: 18, elevation: 12, marginHorizontal: 5 }]}
                         onPress={() => { }}
                     >{this.props.lanData.addNew}</Button>
+                    <Button
+                        mode="outlined"
+                        labelStyle={[this.props.ftszData.paragraph, this.props.themeData.Ltheme]}
+                        style={[this.props.themeData.SthemeB, { borderRadius: 18, elevation: 12, marginHorizontal: 5 }]}
+                        onPress={() => this.clearFilter()}
+                    >{this.props.lanData.clearAll}</Button>
                 </View>
                 <Snackbar
                     visible={this.state.showSnackbar} duration={1500}
@@ -271,8 +310,13 @@ class LoginScreen extends Component {
                                     descriptionStyle={[this.props.themeData.Stheme, this.props.ftszData.paragraph]}
                                     description={item.church_name}
                                     right={props => <List.Icon {...props} icon={
-                                        this.state.orderAcord === "37" ? item.lordT === 1 ? "check" : "close" : "cancel"
+                                        this.state.orderAcord === "37" ? item.lordT === 1 ? "check" : "close"
+                                            : this.state.orderAcord === "40" ? item.prayerM === 1 ? "check" : "close"
+                                                : this.state.orderAcord === "38" ? item.homeM === 1 ? "check" : "close"
+                                                    : this.state.orderAcord === "39" ? item.groupM === 1 ? "check" : "close"
+                                                        : this.state.orderAcord === "1473" ? item.gospelV === 1 ? "check" : "close" : "cancel"
                                     } color={this.props.themeData.SthemeC} style={this.props.ftszData.paragraph} />}
+                                // onPress={() => this.rollCall(item.member_id)}
                                 />
                             )}
                         />
@@ -516,7 +560,7 @@ class LoginScreen extends Component {
                             titleStyle={[this.props.themeData.Stheme, this.props.ftszData.subhead]}
                             onPress={() => {
                                 this.setState({
-                                    orderAcord: '37', orderAcordOp: false,
+                                    orderAcord: '37',
                                     showOrderAcord: this.props.lanData.lordTableFull
                                 })
                             }}
@@ -526,7 +570,7 @@ class LoginScreen extends Component {
                             titleStyle={[this.props.themeData.Stheme, this.props.ftszData.subhead]}
                             onPress={() => {
                                 this.setState({
-                                    orderAcord: '40', orderAcordOp: false,
+                                    orderAcord: '40',
                                     showOrderAcord: this.props.lanData.prayerFull
                                 })
                             }}
@@ -536,7 +580,7 @@ class LoginScreen extends Component {
                             titleStyle={[this.props.themeData.Stheme, this.props.ftszData.subhead]}
                             onPress={() => {
                                 this.setState({
-                                    orderAcord: '38', orderAcordOp: false,
+                                    orderAcord: '38',
                                     showOrderAcord: this.props.lanData.homeMetFull
                                 })
                             }}
@@ -546,7 +590,7 @@ class LoginScreen extends Component {
                             titleStyle={[this.props.themeData.Stheme, this.props.ftszData.subhead]}
                             onPress={() => {
                                 this.setState({
-                                    orderAcord: '39', orderAcordOp: false,
+                                    orderAcord: '39',
                                     showOrderAcord: this.props.lanData.grouMetFull
                                 })
                             }}
@@ -556,11 +600,17 @@ class LoginScreen extends Component {
                             titleStyle={[this.props.themeData.Stheme, this.props.ftszData.subhead]}
                             onPress={() => {
                                 this.setState({
-                                    orderAcord: '1473', orderAcordOp: false,
+                                    orderAcord: '1473',
                                     showOrderAcord: this.props.lanData.gospVisFull
                                 })
                             }}
                         />
+                        <Dialog.Actions>
+                            <Button
+                                labelStyle={[this.props.ftszData.paragraph, this.props.themeData.XLtheme]}
+                                onPress={() => this.reOrder()}
+                            >OK</Button>
+                        </Dialog.Actions>
                     </Dialog>
                 </Portal>
                 <FAB style={styles.fab} icon="arrow-up" small
@@ -636,6 +686,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
+        flexWrap: 'wrap',
     },
     fab: {
         position: 'absolute',
