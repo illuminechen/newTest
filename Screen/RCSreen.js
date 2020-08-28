@@ -43,9 +43,17 @@ class LoginScreen extends Component {
         level4Men: false, level4: '', level4id: 0,
         orderAcord: '37', showOrderAcord: this.props.lanData.lordTableFull, orderAcordOp: false,
         endsort: [],
-        flatListRender: '',
+        flatListRender: 0,
     }
     async componentDidMount() {
+        const hh = moment(new Date()).diff(moment().startOf('week'), 'h')
+        if (hh > 176) {
+            this.setState({ orderAcord: '37', showOrderAcord: this.props.lanData.lordTableFull })
+        } else if (hh > 89) {
+            this.setState({ orderAcord: '39', showOrderAcord: this.props.lanData.grouMetFull })
+        } else if (hh > 65) {
+            this.setState({ orderAcord: '40', showOrderAcord: this.props.lanData.prayerFull })
+        }
         await this.getTotalAtt(), await this.orderCal()
     }
     CalonChange = async (event, date) => {
@@ -85,17 +93,20 @@ class LoginScreen extends Component {
         const week = this.state.nowDate
         await this.props.totalAttend(year, week, '0', '1', this.state.genderSel, this.state.statusSel,
             this.state.identitySel, this.state.groupSel, this.state.searchData)
-        const limit = await this.props.tolAtt.todos.count
-        console.log("limit", limit)
-        await this.props.totalAttend(year, week, '0', limit, this.state.genderSel, this.state.statusSel,
-            this.state.identitySel, this.state.groupSel, this.state.searchData)
-        const year_from = this.state.nowMonth - 6 > 0 ? this.state.nowYear : this.state.nowYear - 1
-        const month_from = this.state.nowMonth - 6 > 0 ? this.state.nowMonth - 6 : this.state.nowMonth + 6
-        const year_to = this.state.nowMonth - 1 > 0 ? this.state.nowYear : this.state.nowYear - 1
-        const month_to = this.state.nowMonth - 1 > 0 ? this.state.nowMonth - 1 : 11 + this.state.nowMonth
-        await this.props.sumAttend(this.state.orderAcord, year_from, month_from, year_to, month_to,
-            this.state.searchData, this.state.genderSel, this.state.statusSel, this.state.identitySel,
-            this.state.groupSel, limit)
+        const totalFetch = await this.props.tolAtt.isFetching
+        if (totalFetch === false) {
+            let limit = await this.props.tolAtt.todos.count
+            console.log("limit", limit)
+            await this.props.totalAttend(year, week, '0', limit, this.state.genderSel, this.state.statusSel,
+                this.state.identitySel, this.state.groupSel, this.state.searchData)
+            const year_from = this.state.nowMonth - 6 > 0 ? year : year - 1
+            const month_from = this.state.nowMonth - 6 > 0 ? this.state.nowMonth - 6 : this.state.nowMonth + 6
+            const year_to = this.state.nowMonth - 1 > 0 ? year : year - 1
+            const month_to = this.state.nowMonth - 1 > 0 ? this.state.nowMonth - 1 : 11 + this.state.nowMonth
+            await this.props.sumAttend(this.state.orderAcord, year_from, month_from, year_to, month_to,
+                this.state.searchData, this.state.genderSel, this.state.statusSel, this.state.identitySel,
+                this.state.groupSel, limit)
+        }
     }
     orderCal = async () => {
         const orderCalFetch = await this.props.sumAtt.isFetching
@@ -134,7 +145,7 @@ class LoginScreen extends Component {
             const item = await this.props.tolAtt.todos.members
             item.forEach((obj, index) => {
                 toltmp.push({
-                    key: index, member_name: obj['member_name'],
+                    member_name: obj['member_name'],
                     member_id: obj['member_id'],
                     path: obj['path'],
                     church_name: obj['church_name'],
@@ -148,8 +159,9 @@ class LoginScreen extends Component {
         }
         toltmp.sort((a, b) => { return b.sum - a.sum })
         this.setState({ endsort: toltmp })
-        //console.log("getTodalAtt", toltmp.filter(e => e.path))
+        console.log("getTodalAtt", toltmp)
         console.log("getTotalAtt size", (JSON.stringify(toltmp).length) / 1024, "Kbyte")
+        this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
     }
     arrayFilter = async () => {
         if (this.state.statusSel || this.state.identitySel || this.state.groupSel) {
@@ -169,15 +181,15 @@ class LoginScreen extends Component {
             } else if (ttmp === 8) {
                 temp = obj.filter(e => e.path.split(',')[1] === this.state.level2id)
                 this.setState({ districtOp: false })
-                districtemp = temp
+                search || gender ? districtemp = temp : this.setState({ endsort: temp })
             } else if (ttmp === 11) {
                 temp = obj.filter(e => e.path.split(',')[2] === this.state.level3id)
                 this.setState({ districtOp: false })
-                districtemp = temp
+                search || gender ? districtemp = temp : this.setState({ endsort: temp })
             } else if (ttmp === 14) {
                 temp = obj.filter(e => e.path.split(',')[3] === this.state.level4id)
                 this.setState({ districtOp: false })
-                districtemp = temp
+                search || gender ? districtemp = temp : this.setState({ endsort: temp })
             }
         }
         if (gender === 'm') {
@@ -212,19 +224,31 @@ class LoginScreen extends Component {
                 this.setState({ endsort: temp, alotsOp: false })
             } else this.setState({ alotsOp: false })
         }
-        this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
     }
-    clearFilter = async () => {
+    clearFilter = () => {
         this.setState({
             searchData: '', genderSel: '', statusSel: '', identitySel: '', groupSel: '',
             level2id: 0, level3id: 0, level4id: 0
-        })
-        await this.getTotalAtt(), await this.orderCal()
+        }, async () => { await this.getTotalAtt(), await this.orderCal() })
     }
-    rollCall = (id, origAtt) => {
-        origAtt === '0' ?
-            this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '1')
-            : this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '0')
+    rollCall = async (id, origAtt) => {
+        console.log("rollCall", id, origAtt)
+        origAtt === 0 ?
+            await this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '1')
+            : await this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '0')
+        let b = this.state.endsort
+        index = b.map(member => member.member_id).indexOf(id)
+        console.log('index', index)
+        let Att = ''
+        this.state.orderAcord === "37" ? Att = 'lordT'
+            : this.state.orderAcord === "40" ? Att = 'prayerM'
+                : this.state.orderAcord === "38" ? Att = 'homeM'
+                    : this.state.orderAcord === "39" ? Att = 'groupM'
+                        : this.state.orderAcord === "1473" ? Att = 'gospelV' : ''
+        origAtt === 0 ? b[index][Att] = 1 : b[index][Att] = 0
+        this.setState({ endsort: b })
+        this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
+        console.log("changeState", this.state.endsort[index])
     }
     reOrder = async () => {
         await this.getTotalAtt()
@@ -296,13 +320,14 @@ class LoginScreen extends Component {
                     <View style={[this.props.themeData.MthemeB, { flex: 1, width: "92%", justifyContent: 'center' }]}>
                         <FlatList
                             ref={(ref) => this.myScroll = ref}
-                            data={(this.state.endsort).filter(e => e.key < 250)}
+                            data={(this.state.endsort).slice(0, 250)}
                             removeClippedSubviews={true}//default false
                             maxToRenderPerBatch={15}//default 10
                             updateCellsBatchingPeriod={120}//default 50 misec
                             initialNumToRender={8}//default 10
                             windowSize={15}//default 21
                             extraData={this.state.flatListRender}
+                            keyExtractor={(item, key) => key}
                             renderItem={({ item }) => (
                                 <List.Item
                                     title={item.member_name}
@@ -316,7 +341,12 @@ class LoginScreen extends Component {
                                                     : this.state.orderAcord === "39" ? item.groupM === 1 ? "check" : "close"
                                                         : this.state.orderAcord === "1473" ? item.gospelV === 1 ? "check" : "close" : "cancel"
                                     } color={this.props.themeData.SthemeC} style={this.props.ftszData.paragraph} />}
-                                // onPress={() => this.rollCall(item.member_id)}
+                                    onPress={() => this.rollCall(item.member_id,
+                                        this.state.orderAcord === "37" ? item.lordT
+                                            : this.state.orderAcord === "40" ? item.prayerM
+                                                : this.state.orderAcord === "38" ? item.homeM
+                                                    : this.state.orderAcord === "39" ? item.groupM
+                                                        : this.state.orderAcord === "1473" ? item.gospelV : 0)}
                                 />
                             )}
                         />

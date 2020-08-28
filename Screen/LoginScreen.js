@@ -26,7 +26,6 @@ class LoginScreen extends Component {
         account: '', captcha_code: '', church_id: '0', district: '1', language: 'zh-tw', pwd: '',
     }
     async componentDidMount() {
-        //this.checkIfLoggedIn();
         try {
             console.log("componentDidMount asyncstorage",
                 await AsyncStorage.multiGet(['fontSize', 'theme', 'language', 'account'])

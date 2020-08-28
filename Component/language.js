@@ -79,6 +79,13 @@ export default {
         mature: 'mature',
         middleAge: 'middle age',
         elder: 'elder',
+
+        // 看望選單
+        lordTfreq: 'Frequency',
+        fourperm: '4-5/month',
+        threeperm: '2-3/month',
+        oneperm: '1below/month',
+        otherChLf: 'church life only',
     },
     zh: {
         //登入頁面
@@ -160,5 +167,12 @@ export default {
         mature: '青壯',
         middleAge: '中壯',
         elder: '年長',
+
+        // 看望選單
+        lordTfreq: '主日頻率',
+        fourperm: '4-5次/月',
+        threeperm: '2-3次/月',
+        oneperm: '1次以下/月',
+        otherChLf: '僅召會生活',
     }
 }
