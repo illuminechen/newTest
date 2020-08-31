@@ -21,6 +21,7 @@ class SettingScreen extends Component {
         fontSize: 'medium', fontSizeOp: false, fontSizeShow: this.props.lanData.middle,
         theme: 'starWhite', themeOp: false, themeShow: this.props.lanData.theme1,
         language: 'zh', lanOp: false, lanShow: this.props.lanData.chzh,
+        clearFreqOp: false,
     }
     async componentDidMount() {
         try {
@@ -65,6 +66,11 @@ class SettingScreen extends Component {
             console.log(await AsyncStorage.getItem('language'), "getItem language")
         } catch (e) { console.log("save language error", e) }
     }
+    clearFreq = async () => {
+        this.setState({ clearFreqOp: false })
+        let a = await AsyncStorage.getItem('frequList')
+        a === null ? console.log("no frequList") : await AsyncStorage.removeItem('frequList')
+    }
     render() {
         return (
             <View style={[styles.container, this.props.themeData.MthemeB]}>
@@ -92,6 +98,15 @@ class SettingScreen extends Component {
                     >{this.state.lanShow}</Button>
                 </View>
                 <Divider />
+                <Text style={[this.props.ftszData.paragraph, this.props.themeData.Stheme]}>
+                    {this.props.lanData.clearFreq}</Text>
+                <View style={{ flexDirection: 'row', padding: 6, alignItems: 'center', width: '100%' }} >
+                    <Text style={[this.props.ftszData.title, this.props.themeData.XLtheme, { paddingRight: 7 }]}>
+                        {this.props.lanData.clearFreq}</Text>
+                    <Button labelStyle={[this.props.ftszData.button, this.props.themeData.Stheme]}
+                        onPress={() => this.setState({ clearFreqOp: true })}
+                    >{this.props.lanData.ListConfirm}</Button>
+                </View>
                 <Portal>
                     <Dialog
                         visible={this.state.fontSizeOp}
@@ -182,6 +197,22 @@ class SettingScreen extends Component {
                                     this.onLanguage)
                             }}
                         />
+                    </Dialog>
+                    <Dialog
+                        visible={this.state.clearFreqOp}
+                        onDismiss={() => { this.setState({ clearFreqOp: false }) }}
+                        style={this.props.themeData.LthemeB}
+                    >
+                        <Dialog.Content>
+                            <Text style={[this.props.ftszData.title, this.props.themeData.XLtheme, { paddingRight: 7 }]}>
+                                {this.props.lanData.clearDouCheck}</Text>
+                        </Dialog.Content>
+                        <Dialog.Actions>
+                            <Button
+                                labelStyle={[this.props.ftszData.paragraph, this.props.themeData.XLtheme]}
+                                onPress={() => this.clearFreq()}
+                            >OK</Button>
+                        </Dialog.Actions>
                     </Dialog>
                 </Portal>
             </View>

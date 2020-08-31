@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, StyleSheet, TextInput, Alert, ScrollView } from 'react-native'
+import { View, StyleSheet, TextInput, Alert, ScrollView, AsyncStorage } from 'react-native'
 import { ActivityIndicator, Button, IconButton, Dialog, Text, Divider, Portal, List } from 'react-native-paper'
 
 // redux
@@ -23,10 +23,17 @@ class MainScreen extends Component {
     state = {
         nowWeek: moment(new Date()).format("ww"),
         nowMonth: moment(new Date()).format("MM"),
-        nowYear: moment(new Date()).format("yyyy"), totalAttArray: [], orderArray: []
+        nowYear: moment(new Date()).format("yyyy"), totalAttArray: [], orderArray: [],
+        frequList: []
     }
-    componentDidMount() {
+    async componentDidMount() {
         this.getTotalAtt()
+        try {
+            let a = await AsyncStorage.getItem('frequList')
+            let b = JSON.parse(a)
+            this.setState({ frequList: b })
+            console.log("orig FrequList", this.state.frequList)
+        } catch (e) { console.log("mainScreen component error", e) }
     }
     getTotalAtt = async () => {
         const year = this.state.nowYear
@@ -112,7 +119,7 @@ class MainScreen extends Component {
                                 contentStyle={{ margin: 10 }}
                                 style={[this.props.themeData.SthemeB,
                                 { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
-                                onPress={() => { }}
+                                onPress={() => Actions.FrequListScreen()}
                             >青職排</Button>
                             <Button
                                 mode="contained" icon="pen-plus"
@@ -120,7 +127,7 @@ class MainScreen extends Component {
                                 contentStyle={{ margin: 10 }}
                                 style={[this.props.themeData.SthemeB,
                                 { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
-                                onPress={() => { }}
+                                onPress={() => Actions.AddFreqScreen()}
                             >{this.props.lanData.addNew}</Button>
                         </View>
                     </View>

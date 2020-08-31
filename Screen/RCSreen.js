@@ -91,6 +91,7 @@ class LoginScreen extends Component {
     getTotalAtt = async () => {
         const year = this.state.nowYear
         const week = this.state.nowDate
+        const month = this.state.nowMonth
         await this.props.totalAttend(year, week, '0', '1', this.state.genderSel, this.state.statusSel,
             this.state.identitySel, this.state.groupSel, this.state.searchData)
         const totalFetch = await this.props.tolAtt.isFetching
@@ -99,10 +100,10 @@ class LoginScreen extends Component {
             console.log("limit", limit)
             await this.props.totalAttend(year, week, '0', limit, this.state.genderSel, this.state.statusSel,
                 this.state.identitySel, this.state.groupSel, this.state.searchData)
-            const year_from = this.state.nowMonth - 6 > 0 ? year : year - 1
-            const month_from = this.state.nowMonth - 6 > 0 ? this.state.nowMonth - 6 : this.state.nowMonth + 6
-            const year_to = this.state.nowMonth - 1 > 0 ? year : year - 1
-            const month_to = this.state.nowMonth - 1 > 0 ? this.state.nowMonth - 1 : 11 + this.state.nowMonth
+            const year_from = month - 6 > 0 ? year : year - 1
+            const month_from = month - 6 > 0 ? month - 6 : month + 6
+            const year_to = month - 1 > 0 ? year : year - 1
+            const month_to = month - 1 > 0 ? month - 1 : 11 + month
             await this.props.sumAttend(this.state.orderAcord, year_from, month_from, year_to, month_to,
                 this.state.searchData, this.state.genderSel, this.state.statusSel, this.state.identitySel,
                 this.state.groupSel, limit)
@@ -232,13 +233,13 @@ class LoginScreen extends Component {
         }, async () => { await this.getTotalAtt(), await this.orderCal() })
     }
     rollCall = async (id, origAtt) => {
-        console.log("rollCall", id, origAtt)
+        //console.log("rollCall", id, origAtt)
         origAtt === 0 ?
             await this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '1')
             : await this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '0')
-        let b = this.state.endsort
-        index = b.map(member => member.member_id).indexOf(id)
-        console.log('index', index)
+        let b = this.state.endsort.slice(0, 250)
+        let index = b.map(member => member.member_id).indexOf(id)
+        //console.log('index', index)
         let Att = ''
         this.state.orderAcord === "37" ? Att = 'lordT'
             : this.state.orderAcord === "40" ? Att = 'prayerM'
