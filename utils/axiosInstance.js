@@ -11,9 +11,7 @@
 //   请求错误处理
 // 不設定即採用默認值 timeout 為 0
 import axios from 'axios'
-import {
-  notification
-} from 'antd';
+
 // 覆蓋原始 instance
 
 
