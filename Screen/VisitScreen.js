@@ -61,7 +61,7 @@ class VisitScreen extends Component {
         const totalFetch = await this.props.tolAtt.isFetching
         if (totalFetch === false) {
             let limit = await this.props.tolAtt.todos.count
-            console.log("limit", limit)
+            console.log("visitScreen limit", limit)
             await this.props.totalAttend(year, week, '0', limit, this.state.genderSel, this.state.statusSel,
                 this.state.identitySel, this.state.groupSel, this.state.searchData)
             const year_from = month - 6 > 0 ? year : year - 1

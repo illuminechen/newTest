@@ -35,7 +35,7 @@ class AddFreqScreen extends Component {
         orderAcord: '37', showOrderAcord: this.props.lanData.lordTableFull, orderAcordOp: false,
         endsort: [], freqList: [], freqListName: '',
         freqCheckOp: false, freqListNameOp: false,
-        flatListRender: 0,
+        flatListRender: 0, limit: 0, isAllSelect: false,
     }
     async componentDidMount() {
         await this.getTotalAtt(), await this.orderCal()
@@ -63,7 +63,8 @@ class AddFreqScreen extends Component {
         const totalFetch = await this.props.tolAtt.isFetching
         if (totalFetch === false) {
             let limit = await this.props.tolAtt.todos.count
-            console.log("limit", limit)
+            this.setState({ limit: parseInt(limit) })
+            console.log("addFreq limit", limit)
             await this.props.totalAttend(year, week, '0', limit, this.state.genderSel, this.state.statusSel,
                 this.state.identitySel, this.state.groupSel, this.state.searchData)
             const year_from = month - 6 > 0 ? year : year - 1
@@ -225,20 +226,68 @@ class AddFreqScreen extends Component {
         }
     }
     finalCheck = async () => {
-        this.setState({ freqCheckOp: false })
-        let a = this.state.freqList
-        let b = []
-        b.push({ name: this.state.freqListName, orderAcord: this.state.orderAcord }, { a })
-        try {
-            let c = await AsyncStorage.getItem('frequList')
-            c === null ?
-                await AsyncStorage.setItem('frequList', JSON.stringify({ b }))
-                : await AsyncStorage.setItem('frequList', JSON.stringify(JSON.parse(c).push({ b })))
-        } catch (e) { console.log("finalCheck error", e) }
-        Actions.MainScreen()
+        if (this.state.freqListName === '') {
+            const title = this.props.lanData.listName
+            return (
+                Alert.alert(
+                    title, title,
+                    [{ text: 'OK'/*, onPress: () => console.log('OK Pressed')*/ },]
+                )
+            )
+        } else {
+            this.setState({ freqCheckOp: false })
+            let a = this.state.freqList
+            let b = []
+            b.push({ name: this.state.freqListName, orderAcord: this.state.orderAcord, member: a })
+            try {
+                let c = await AsyncStorage.getItem('frequList')
+                if (c === null) {
+                    await AsyncStorage.setItem('frequList', JSON.stringify(b))
+                    Actions.MainScreen()
+                } else {
+                    let d = []
+                    d = JSON.parse(c)
+                    let e = []
+                    d.forEach(obj => {
+                        e.push({
+                            member: obj.member, name: obj.name, orderAcord: obj.orderAcord
+                        }, { name: this.state.freqListName, orderAcord: this.state.orderAcord, member: a })
+                    })
+                    await AsyncStorage.setItem('frequList', JSON.stringify(e))
+                    Actions.pop()
+                }
+            } catch (e) { console.log("finalCheck error", e) }
+        }
     }
     selectAll = () => {
-        
+        if (this.state.isAllSelect === false) {
+            const limit = this.state.limit
+            if (limit > 499) {
+                const title = this.props.lanData.tooManyTi
+                const msg = this.props.lanData.tooManyMsg
+                return (
+                    Alert.alert(
+                        title, msg,
+                        [{ text: 'OK'/*, onPress: () => console.log('OK Pressed')*/ },]
+                    )
+                )
+            } else {
+                let newMember = []
+                let obj = this.state.endsort
+                obj.forEach(objj => {
+                    newMember.push({
+                        member_name: objj.member_name,
+                        member_id: objj.member_id
+                    })
+                })
+                obj.forEach((value, index) => { obj[index]['freq'] = 1 })
+                this.setState({ freqList: newMember, endsort: obj, isAllSelect: true })
+            }
+        } else {
+            let reMember = this.state.endsort
+            reMember.forEach((value, index) => { reMember[index]['freq'] = 0 })
+            this.setState({ freqList: [], endsort: reMember, isAllSelect: false })
+        }
     }
     render() {
         const AttFetch = this.props.tolAtt.isFetching || this.props.sumAtt.isFetching
@@ -280,7 +329,7 @@ class AddFreqScreen extends Component {
                         mode="outlined"
                         labelStyle={[this.props.ftszData.paragraph, this.props.themeData.Ltheme]}
                         style={[this.props.themeData.SthemeB, { borderRadius: 18, elevation: 12, marginHorizontal: 5 }]}
-                        onPress={() => { }}
+                        onPress={() => this.selectAll()}
                     >{this.props.lanData.selectAll}</Button>
                 </View>
                 {AttFetch ?

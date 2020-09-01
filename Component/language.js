@@ -23,13 +23,15 @@ export default {
         visitList: 'VisitList',
         setting: 'Setting',
         addNew: 'Add',
-        
+
         // 新增常用名單
         freList: 'Frequent List',
         ListConfirm: 'Confirm',
-        orderAccord:'order According',
+        orderAccord: 'order According',
         listName: 'Name of your frequent list',
-        selectAll:'Select All',
+        selectAll: 'Select All',
+        tooManyTi: 'Warning',
+        tooManyMsg: 'Not recommand to add such many members.',
 
         // 創建帳號頁面
         withFB: '| Create account by Facebook',
@@ -52,8 +54,8 @@ export default {
         theme1: 'Theme 1',
         theme2: 'Theme 2',
         theme3: 'Theme 3',
-        clearFreq:'Clear all frequent Lists',
-        clearDouCheck:'This action will clear all of the frequent lists',
+        clearFreq: 'Clear all frequent Lists',
+        clearDouCheck: 'This action will clear all of the frequent lists',
 
         // 點名
         search: 'Search',
@@ -119,13 +121,15 @@ export default {
         visitList: '看望',
         setting: '設定',
         addNew: '新增',
-        
+
         // 新增常用名單
         freList: '常用名單',
         ListConfirm: '確認',
         orderAccord: '排序依據、常用點名項目',
         listName: '常用名單名稱',
         selectAll: '全選',
+        tooManyTi: '警告',
+        tooManyMsg: '不建議在常用名單中加入太多成員',
 
         // 創建帳號頁面
         withFB: '| 用Facebook創立帳號',
