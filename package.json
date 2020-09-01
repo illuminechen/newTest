@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@react-native-community/datetimepicker": "^2.6.0",
+    "axios": "^0.20.0",
     "expo": "~38.0.8",
     "expo-facebook": "^8.2.1",
     "expo-google-app-auth": "^8.1.2",
