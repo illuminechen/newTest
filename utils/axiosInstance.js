@@ -17,28 +17,28 @@ import axios from 'axios'
 
 const instance = axios.create({
   // baseURL: 'https://jsonplaceholder.typicode.com'
-  headers:{'Access-Control-Allow-Origin':'*'}
+  headers: { 'Access-Control-Allow-Origin': '*' }
 });
 
 
 // Obviously, you can set your own interceptors:
 // axios.interceptors.request.... etc
- instance.defaults.timeout = 2500
+instance.defaults.timeout = 2500
 
- instance.interceptors.request.use(async(config) => {
-    console.log('interceptors.reques')
-    return config
-  },err => {
-    return Promise.reject(err);
-  })
+instance.interceptors.request.use(async (config) => {
+  console.log('interceptors.reques')
+  return config
+}, err => {
+  return Promise.reject(err);
+})
 
 // 响应错误处理
-instance.interceptors.response.use(async(res) =>{
-    return res;
-},err => {
-    // 响应错误的常见状态码 5XX 500-服务器错误 502-服务器重启     
-    console.log('error',err)
-  }
+instance.interceptors.response.use(async (res) => {
+  return res;
+}, err => {
+  // 响应错误的常见状态码 5XX 500-服务器错误 502-服务器重启     
+  console.log('error', err)
+}
 );
 
 

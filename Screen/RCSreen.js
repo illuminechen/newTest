@@ -28,7 +28,6 @@ import moment from 'moment' // time
 class LoginScreen extends Component {
     state = {
         searchData: '',
-        showCalender: false,
         nowDate: moment(new Date()).format("ww"),
         nowYear: moment(new Date()).format("yyyy"),
         nowMonth: moment(new Date()).format("MM"),

@@ -24,21 +24,33 @@ class MainScreen extends Component {
         nowWeek: moment(new Date()).format("ww"),
         nowMonth: moment(new Date()).format("MM"),
         nowYear: moment(new Date()).format("yyyy"), totalAttArray: [], orderArray: [],
-        frequList: []
+        frequList: [],
+        editFrqLstOp: false,
     }
     async componentDidMount() {
         this.getTotalAtt()
         try {
             let a = await AsyncStorage.getItem('frequList')
             let b = JSON.parse(a)
-            this.setState({ frequList: b })
-            console.log("orig FrequList", this.state.frequList)
+            let c = []
+            b.forEach((e, index) => {
+                c.push({ name: e.name, key: index })
+            });
+            this.setState({ frequList: c })
+            console.log("freqlist MainScreen", this.state.frequList)
         } catch (e) { console.log("mainScreen component error", e) }
     }
     getTotalAtt = async () => {
         const year = this.state.nowYear
         const week = this.state.nowWeek
         await this.props.totalAttend(year, week, '0', '1', '', '', '', '', '')
+    }
+    callFreqList = async (index) => {
+        try {
+            await AsyncStorage.setItem('freqListKey', JSON.stringify(index))
+            //console.log("freqListKey", await AsyncStorage.getItem('freqListKey'))
+            Actions.FrequListScreen()
+        } catch (e) { console.log("callFreqList error", e) }
     }
     render() {
         const AttFetch = this.props.tolAtt.isFetching
@@ -75,62 +87,71 @@ class MainScreen extends Component {
                             {this.props.tolAtt.todos.summary ? this.props.tolAtt.todos.summary["1473"] ? this.props.tolAtt.todos.summary["1473"] : 0 : 0}
                         </Text>
                     </View>
-                    <View>
-                        <View style={styles.pickerView}>
-                            <Button
-                                mode="contained"
-                                labelStyle={[this.props.ftszData.highlight, this.props.themeData.Ltheme]}
-                                contentStyle={{ margin: 20 }}
-                                style={[this.props.themeData.XLthemeB,
-                                { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
-                                onPress={() => Actions.RCScreen()}
-                            >{this.props.lanData.rollCall}</Button>
-                            <Button
-                                mode="contained"
-                                labelStyle={[this.props.ftszData.highlight, this.props.themeData.Ltheme]}
-                                contentStyle={{ margin: 20 }}
-                                style={[this.props.themeData.XLthemeB,
-                                { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
-                                onPress={() => Actions.StaScreen()}
-                            >{this.props.lanData.statis}</Button>
-                        </View>
-                        <View style={styles.pickerView}>
-                            <Button
-                                mode="contained"
-                                labelStyle={[this.props.ftszData.highlight, this.props.themeData.Ltheme]}
-                                contentStyle={{ margin: 20 }}
-                                style={[this.props.themeData.XLthemeB,
-                                { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
-                                onPress={() => Actions.VisitScreen()}
-                            >{this.props.lanData.visitList}</Button>
-                            <Button
-                                mode="contained"
-                                labelStyle={[this.props.ftszData.highlight, this.props.themeData.Ltheme]}
-                                contentStyle={{ margin: 20 }}
-                                style={[this.props.themeData.XLthemeB,
-                                { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
-                                onPress={() => Actions.SettingScreen()}
-                            >{this.props.lanData.setting}</Button>
-                        </View>
-                        <View style={styles.pickerView}>
-                            <Button
-                                mode="contained"
-                                labelStyle={[this.props.ftszData.title, this.props.themeData.Ltheme]}
-                                contentStyle={{ margin: 10 }}
-                                style={[this.props.themeData.SthemeB,
-                                { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
-                                onPress={() => Actions.FrequListScreen()}
-                            >青職排</Button>
-                            <Button
-                                mode="contained" icon="pen-plus"
-                                labelStyle={[this.props.ftszData.title, this.props.themeData.Ltheme]}
-                                contentStyle={{ margin: 10 }}
-                                style={[this.props.themeData.SthemeB,
-                                { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
-                                onPress={() => Actions.AddFreqScreen()}
-                            >{this.props.lanData.addNew}</Button>
-                        </View>
+                    <View style={styles.pickerView}>
+                        <Button
+                            mode="contained"
+                            labelStyle={[this.props.ftszData.highlight, this.props.themeData.Ltheme]}
+                            contentStyle={{ margin: 20 }}
+                            style={[this.props.themeData.XLthemeB,
+                            { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
+                            onPress={() => Actions.RCScreen()}
+                        >{this.props.lanData.rollCall}</Button>
+                        <Button
+                            mode="contained"
+                            labelStyle={[this.props.ftszData.highlight, this.props.themeData.Ltheme]}
+                            contentStyle={{ margin: 20 }}
+                            style={[this.props.themeData.XLthemeB,
+                            { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
+                            onPress={() => Actions.StaScreen()}
+                        >{this.props.lanData.statis}</Button>
                     </View>
+                    <View style={styles.pickerView}>
+                        <Button
+                            mode="contained"
+                            labelStyle={[this.props.ftszData.highlight, this.props.themeData.Ltheme]}
+                            contentStyle={{ margin: 20 }}
+                            style={[this.props.themeData.XLthemeB,
+                            { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
+                            onPress={() => Actions.VisitScreen()}
+                        >{this.props.lanData.visitList}</Button>
+                        <Button
+                            mode="contained"
+                            labelStyle={[this.props.ftszData.highlight, this.props.themeData.Ltheme]}
+                            contentStyle={{ margin: 20 }}
+                            style={[this.props.themeData.XLthemeB,
+                            { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
+                            onPress={() => Actions.SettingScreen()}
+                        >{this.props.lanData.setting}</Button>
+                    </View>
+                    <View style={styles.pickerView}>
+                        {this.state.frequList.map((item) => (
+                            <Button
+                                mode="contained"
+                                labelStyle={[this.props.ftszData.title, this.props.themeData.Ltheme]}
+                                contentStyle={{ margin: 10 }}
+                                style={[this.props.themeData.SthemeB,
+                                { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
+                                onPress={() => this.callFreqList(item.key)}
+                            >{item.name}</Button>
+                        ))}
+                        <Button
+                            mode="contained" icon="pen-plus"
+                            labelStyle={[this.props.ftszData.title, this.props.themeData.Ltheme]}
+                            contentStyle={{ margin: 10 }}
+                            style={[this.props.themeData.SthemeB,
+                            { borderRadius: 18, elevation: 12, marginVertical: 8 }]}
+                            onPress={() => Actions.AddFreqScreen()}
+                        >{this.props.lanData.addNew}</Button>
+                    </View>
+                    <Portal>
+                        <Dialog
+                        visible={this.state.editFrqLstOp}
+                        style={this.props.themeData.LthemeB}
+                        onDismiss={() => this.setState({ editFrqLstOp: false })}
+                        >
+
+                        </Dialog>
+                    </Portal>
                 </View>
             )
         }
