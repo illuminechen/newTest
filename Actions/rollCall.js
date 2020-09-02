@@ -1,25 +1,46 @@
 import { ROLLCALL_TODOS, ROLLCALL_SUCCESS, ROLLCALL_FAILURE } from './constants'
+import axios from 'axios'
+import qs from 'qs'
 
 export function rollCall(member_ids, meeting, year, week, attend) {
     console.log("Action rollCall", member_ids, meeting, year, week, attend)
+    let bodyFormData = ''
+    if (typeof (member_ids) === 'object') {
+        let a = ''
+        let b = []
+        b = member_ids
+        b.forEach((value, index) => {
+            a = a + 'member_ids%5B%5D=' + b[index] + '&'
+        });
+        a = a + 'meeting=' + meeting + '&year=' + year + '&week=' + week + '&attend=' + attend
+        bodyFormData = a
+    } else {
+        bodyFormData = qs.stringify({
+            'member_ids[]': member_ids,
+            'meeting': meeting,
+            'year': year,
+            'week': week,
+            'attend': attend,
+        })
+    }
     return (dispatch) => {
         dispatch(getToDos())
         return (
-            fetch('https://www.chlife-stat.org/edit_member_activity.php', {
+            axios({
                 method: 'POST',
-                body: `member_ids[]=${member_ids}&meeting=${meeting}&year=${year}&week=${week}&attend=${attend}`,
-                headers: new Headers({
+                url: 'https://www.chlife-stat.org/edit_member_activity.php',
+                headers: {
+                    'Cookie': 'PHPSESSID=ift1gv9olcdthmn62n3d4un0v4',
                     'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-                    'cookie': 'PHPSESSID=jumoqvikmsjtmemg6h28mracg0'
-                }),
+                },
+                data: bodyFormData
             })
         )
-            .then(res => res.json())
+            //.then(res => res.json()
             .then(json => {
-
                 return (dispatch(getToDosSuccess(json)))
             })
-            .catch(err => dispatch(getToDosFailure(err)))
+            .catch(err => dispatch(getToDosFailure(err), console.log("rollCallAction", err)))
     }
 }
 
@@ -40,6 +61,6 @@ function getToDosSuccess(data) {
 
 function getToDosFailure() {
     return {
-        type: ROLLCALL_FAILURE
+        type: ROLLCALL_FAILURE,
     }
 }

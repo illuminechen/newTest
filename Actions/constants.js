@@ -61,3 +61,6 @@ export const SUMATT_FAILURE = 'SUMATT_FAILURE';
 export const ROLLCALL_TODOS = 'ROLLCALL_TODOS';
 export const ROLLCALL_SUCCESS = 'ROLLCALL_SUCCESS';
 export const ROLLCALL_FAILURE = 'ROLLCALL_FAILURE';
+
+// main screen refresh
+export const REFRESH_TODOS = 'REFRESH_TODOS'

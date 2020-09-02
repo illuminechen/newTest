@@ -32,6 +32,7 @@ export default {
         selectAll: 'Select All',
         tooManyTi: 'Warning',
         tooManyMsg: 'Not recommand to add such many members.',
+        clearThisFrq: 'This action will delete this frequent list',
 
         // 創建帳號頁面
         withFB: '| Create account by Facebook',
@@ -130,6 +131,7 @@ export default {
         selectAll: '全選',
         tooManyTi: '警告',
         tooManyMsg: '不建議在常用名單中加入太多成員',
+        clearThisFrq: '這將會刪除此常用名單',
 
         // 創建帳號頁面
         withFB: '| 用Facebook創立帳號',

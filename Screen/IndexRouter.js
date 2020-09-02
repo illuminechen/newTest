@@ -15,49 +15,45 @@ class IndexRouter extends Component {
     render() {
         return (
             <Router>
-                <Drawer
-                    key={'DrawerView'} hideNavBar={true}
-                >
-                    <Stack key="root">
-                        <Scene key="LoginScreen"
-                            hideNavBar={true} initial
-                            component={LoginScreen}
-                        />
-                        <Scene key="CrtAccount"
-                            hideNavBar={true}
-                            component={CrtAccount}
-                        />
-                        <Scene key="MainScreen"
-                            hideNavBar={true}
-                            component={MainScreen}
-                        />
-                        <Scene key="RCScreen"
-                            hideNavBar={true}
-                            component={RCScreen}
-                        />
-                        <Scene key="VisitScreen"
-                            hideNavBar={true}
-                            component={VisitScreen}
-                        />
-                        <Scene key="StaScreen"
-                            hideNavBar={true}
-                            component={StaScreen}
-                        />
-                        <Scene key="SettingScreen"
-                            hideNavBar={true}
-                            component={SettingScreen}
-                        />
-                        <Scene key="AddFreqScreen"
-                            hideNavBar={true}
-                            component={AddFreqScreen}
-                        />
-                        <Scene key="FrequListScreen"
-                            hideNavBar={true}
-                            component={FrequListScreen}
-                        />
-                    </Stack>
-                </Drawer>
-            </Router>
+                <Stack key="root">
+                    <Scene key="LoginScreen"
+                        hideNavBar={true} initial
+                        component={LoginScreen}
+                    />
+                    <Scene key="CrtAccount"
+                        hideNavBar={true}
+                        component={CrtAccount}
+                    />
+                    <Scene key="MainScreen"
+                        hideNavBar={true}
+                        component={MainScreen}
+                    />
+                    <Scene key="RCScreen"
+                        hideNavBar={true}
+                        component={RCScreen}
+                    />
+                    <Scene key="VisitScreen"
+                        hideNavBar={true}
+                        component={VisitScreen}
+                    />
+                    <Scene key="StaScreen"
+                        hideNavBar={true}
+                        component={StaScreen}
+                    />
+                    <Scene key="SettingScreen"
+                        hideNavBar={true}
+                        component={SettingScreen}
+                    />
+                    <Scene key="AddFreqScreen"
+                        hideNavBar={true}
+                        component={AddFreqScreen}
+                    />
+                    <Scene key="FrequListScreen"
+                        hideNavBar={true}
+                        component={FrequListScreen}
+                    />
+                </Stack>
+            </Router >
         )
     }
 }

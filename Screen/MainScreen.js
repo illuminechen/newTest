@@ -29,6 +29,16 @@ class MainScreen extends Component {
     }
     async componentDidMount() {
         this.getTotalAtt()
+        this.getStart()
+    }
+    componentDidUpdate(prevProps) {
+        if (prevProps.refreshFlag !== this.props.refreshFlag) {
+            Actions.refresh({ key: this.props.refreshFlag })
+            this.getStart()
+            this.getTotalAtt()
+        }
+    }
+    getStart = async()=> {
         try {
             let a = await AsyncStorage.getItem('frequList')
             let b = JSON.parse(a)
@@ -145,9 +155,9 @@ class MainScreen extends Component {
                     </View>
                     <Portal>
                         <Dialog
-                        visible={this.state.editFrqLstOp}
-                        style={this.props.themeData.LthemeB}
-                        onDismiss={() => this.setState({ editFrqLstOp: false })}
+                            visible={this.state.editFrqLstOp}
+                            style={this.props.themeData.LthemeB}
+                            onDismiss={() => this.setState({ editFrqLstOp: false })}
                         >
 
                         </Dialog>
@@ -160,13 +170,14 @@ class MainScreen extends Component {
 
 function mapStateToProps(state) {
     //console.log("mapState1", state.tolAttReducer.todos.count)
-    //console.log("mapState2", state.sumAttReducer.isFetching)
+    console.log("mapState2", state.refreshReducer.flag)
     return {
         lanData: state.languageReducer.lanData,
         ftszData: state.fontsizeReducer.ftszData,
         themeData: state.themeReducer.themeData,
         tolAtt: state.tolAttReducer,
         sumAtt: state.sumAttReducer,
+        refreshFlag: state.refreshReducer.flag
     }
 }
 

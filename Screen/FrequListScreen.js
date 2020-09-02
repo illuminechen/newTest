@@ -19,6 +19,7 @@ import { districtLevel4 } from '../Actions/districtLevel4'
 import { totalAttend } from '../Actions/totalAttend'
 import { sumAttend } from '../Actions/sumAttend'
 import { rollCall } from '../Actions/rollCall'
+import { refreshProp } from '../Actions/refreshProp'
 
 // others
 import DateTimePicker from '@react-native-community/datetimepicker';// default calender picker
@@ -34,6 +35,7 @@ class FrequListScreen extends Component {
         nowMonth: moment(new Date()).format("MM"),
         showCalender: false, CalenderValue: new Date(), showSnackbar: false,
         orderAcord: '37', showOrderAcord: this.props.lanData.lordTableFull, orderAcordOp: false,
+        isSelectAll: false, checkDeleteOp: false,
     }
     async componentDidMount() {
         try {
@@ -42,11 +44,11 @@ class FrequListScreen extends Component {
             let b = JSON.parse(a)[k]
             this.setState({
                 orderAcord: b.orderAcord,
-                showOrderAcord: b.orderAccord === '40' ? this.props.lanData.prayerFull
-                    : b.orderAccord === '38' ? this.props.lanData.homeMetFull
-                        : b.orderAccord === '39' ? this.props.lanData.grouMetFull
-                            : b.orderAccord === '1473' ? this.props.lanData.gospVisFull
-                                : b.orderAccord === '37' ? this.props.lanData.lordTableFull : '',
+                showOrderAcord: b.orderAcord === '40' ? this.props.lanData.prayerFull
+                    : b.orderAcord === '38' ? this.props.lanData.homeMetFull
+                        : b.orderAcord === '39' ? this.props.lanData.grouMetFull
+                            : b.orderAcord === '1473' ? this.props.lanData.gospVisFull
+                                : b.orderAcord === '37' ? this.props.lanData.lordTableFull : '',
                 freqList: b.member
             })
             await this.getTotalAtt(), await this.orderAtt()
@@ -87,7 +89,6 @@ class FrequListScreen extends Component {
     orderAtt = async () => {
         const getTolFetch = await this.props.tolAtt.isFetching
         let freqList = this.state.freqList
-        const orderAcord = this.state.orderAcord
         let toltmp = []
         let keytmp = []
         if (getTolFetch === false) {
@@ -111,20 +112,74 @@ class FrequListScreen extends Component {
             this.setState({ endsort: toltmp })
         }
     }
-    rollCall = () => {
-
+    rollCall = async (id, origAtt) => {
+        //console.log("rollCall", id, origAtt)
+        origAtt === 0 ?
+            await this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '1')
+            : await this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '0')
+        let b = this.state.endsort.slice(0, 250)
+        let index = b.map(member => member.member_id).indexOf(id)
+        //console.log('index', index)
+        let Att = ''
+        this.state.orderAcord === "37" ? Att = 'lordT'
+            : this.state.orderAcord === "40" ? Att = 'prayerM'
+                : this.state.orderAcord === "38" ? Att = 'homeM'
+                    : this.state.orderAcord === "39" ? Att = 'groupM'
+                        : this.state.orderAcord === "1473" ? Att = 'gospelV' : ''
+        origAtt === 0 ? b[index][Att] = 1 : b[index][Att] = 0
+        this.setState({ endsort: b })
+        console.log("changeState", this.state.endsort[index])
     }
-    selectAll = () => {
-
-    }
-    reOrder = () => {
-
+    selectAll = async () => {
+        let a = this.state.endsort
+        let b = []
+        a.forEach((value, index) => {
+            b[index] = parseInt(a[index]['member_id'])
+        })
+        let Att = ''
+        this.state.orderAcord === "37" ? Att = 'lordT'
+            : this.state.orderAcord === "40" ? Att = 'prayerM'
+                : this.state.orderAcord === "38" ? Att = 'homeM'
+                    : this.state.orderAcord === "39" ? Att = 'groupM'
+                        : this.state.orderAcord === "1473" ? Att = 'gospelV' : ''
+        if (this.state.isSelectAll) {
+            await this.props.rollCall(b, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '0')
+            a.forEach((value, index) => {
+                a[index][Att] = 0
+            })
+            this.setState({ isSelectAll: false })
+        } else {
+            await this.props.rollCall(b, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '1')
+            a.forEach((value, index) => {
+                a[index][Att] = 1
+            })
+            this.setState({ isSelectAll: true, endsort: a })
+        }
     }
     arrayFilter = () => {
-
+        let a = this.state.endsort
+        const search = this.state.searchData
+        let b = []
+        if (search) {
+            b = a.filter(e => e.member_name.includes(search))
+            this.setState({ endsort: b })
+        } else {
+            this.orderAtt()
+        }
     }
     deleteFrqLst = async () => {
-
+        try {
+            const k = await AsyncStorage.getItem('freqListKey')
+            let a = await AsyncStorage.getItem('frequList')
+            let b = JSON.parse(a)
+            let remove = b.splice(k, 1)
+            await AsyncStorage.setItem('frequList', JSON.stringify(b))
+            this.setState({ checkDeleteOp: false })
+            let flag = await this.props.refreshFlag.flag
+            flag = flag + 1
+            this.props.refreshProp(flag)
+            Actions.pop()
+        } catch (e) { console.log("deleteFrqLst error", e) }
     }
     editFrqLst = () => {
 
@@ -149,7 +204,7 @@ class FrequListScreen extends Component {
                         onPress={() => this.setState({ showCalender: true })} style={{ elevation: 15 }}
                     />
                     <IconButton icon="trash-can" size={25} color={this.props.themeData.SthemeC}
-                        onPress={() => this.deleteFrqLst()} style={{ elevation: 15 }}
+                        onPress={() => this.setState({ checkDeleteOp: true })} style={{ elevation: 15 }}
                     />
                     <IconButton icon="pen-plus" size={25} color={this.props.themeData.SthemeC}
                         onPress={() => this.editFrqLst()} style={{ elevation: 15 }}
@@ -207,12 +262,12 @@ class FrequListScreen extends Component {
                                                     : this.state.orderAcord === "39" ? item.groupM === 1 ? "check" : "close"
                                                         : this.state.orderAcord === "1473" ? item.gospelV === 1 ? "check" : "close" : "cancel"
                                     } color={this.props.themeData.SthemeC} style={this.props.ftszData.paragraph} />}
-                                // onPress={() => this.rollCall(item.member_id,
-                                //     this.state.orderAcord === "37" ? item.lordT
-                                //         : this.state.orderAcord === "40" ? item.prayerM
-                                //             : this.state.orderAcord === "38" ? item.homeM
-                                //                 : this.state.orderAcord === "39" ? item.groupM
-                                //                     : this.state.orderAcord === "1473" ? item.gospelV : 0)}
+                                    onPress={() => this.rollCall(item.member_id,
+                                        this.state.orderAcord === "37" ? item.lordT
+                                            : this.state.orderAcord === "40" ? item.prayerM
+                                                : this.state.orderAcord === "38" ? item.homeM
+                                                    : this.state.orderAcord === "39" ? item.groupM
+                                                        : this.state.orderAcord === "1473" ? item.gospelV : 0)}
                                 />
                             )}
                         />
@@ -232,7 +287,8 @@ class FrequListScreen extends Component {
                                     onPress={() => {
                                         this.setState({
                                             orderAcord: '37',
-                                            showOrderAcord: this.props.lanData.lordTableFull
+                                            showOrderAcord: this.props.lanData.lordTableFull,
+                                            orderAcordOp: false
                                         })
                                     }} />
                                 <List.Item
@@ -241,7 +297,8 @@ class FrequListScreen extends Component {
                                     onPress={() => {
                                         this.setState({
                                             orderAcord: '40',
-                                            showOrderAcord: this.props.lanData.prayerFull
+                                            showOrderAcord: this.props.lanData.prayerFull,
+                                            orderAcordOp: false
                                         })
                                     }} />
                                 <List.Item
@@ -250,7 +307,8 @@ class FrequListScreen extends Component {
                                     onPress={() => {
                                         this.setState({
                                             orderAcord: '38',
-                                            showOrderAcord: this.props.lanData.homeMetFull
+                                            showOrderAcord: this.props.lanData.homeMetFull,
+                                            orderAcordOp: false
                                         })
                                     }} />
                                 <List.Item
@@ -259,7 +317,8 @@ class FrequListScreen extends Component {
                                     onPress={() => {
                                         this.setState({
                                             orderAcord: '39',
-                                            showOrderAcord: this.props.lanData.grouMetFull
+                                            showOrderAcord: this.props.lanData.grouMetFull,
+                                            orderAcordOp: false
                                         })
                                     }} />
                                 <List.Item
@@ -268,15 +327,26 @@ class FrequListScreen extends Component {
                                     onPress={() => {
                                         this.setState({
                                             orderAcord: '1473',
-                                            showOrderAcord: this.props.lanData.gospVisFull
+                                            showOrderAcord: this.props.lanData.gospVisFull,
+                                            orderAcordOp: false
                                         })
                                     }} />
                             </ScrollView>
                         </Dialog.ScrollArea>
+                    </Dialog>
+                    <Dialog
+                        visible={this.state.checkDeleteOp}
+                        style={this.props.themeData.LthemeB}
+                        onDismiss={() => this.setState({ checkDeleteOp: false })}
+                    >
+                        <Dialog.Content>
+                            <Text style={[this.props.ftszData.paragraph, this.props.themeData.Stheme]}>
+                                {this.props.lanData.clearThisFrq}</Text>
+                        </Dialog.Content>
                         <Dialog.Actions>
                             <Button
                                 labelStyle={[this.props.ftszData.paragraph, this.props.themeData.XLtheme]}
-                                onPress={() => this.reOrder()}
+                                onPress={() => this.deleteFrqLst()}
                             >OK</Button>
                         </Dialog.Actions>
                     </Dialog>
@@ -287,7 +357,7 @@ class FrequListScreen extends Component {
 }
 
 function mapStateToProps(state) {
-    //console.log("mapstate", state.tolAttReducer)
+    //console.log("mapstate", state.refreshReducer)
     return {
         lanData: state.languageReducer.lanData,
         ftszData: state.fontsizeReducer.ftszData,
@@ -296,7 +366,7 @@ function mapStateToProps(state) {
         level3: state.level3Reducer.todos,
         level4: state.level4Reducer.todos,
         tolAtt: state.tolAttReducer,
-        sumAtt: state.sumAttReducer,
+        refreshFlag: state.refreshReducer
     }
 }
 
@@ -305,7 +375,8 @@ function mapDispatchToProps(dispatch) {
         ...bindActionCreators({
             toggleLanguage, toogleFontsize, toogleTheme,
             districtLevel2, districtLevel3, districtLevel4,
-            totalAttend, sumAttend, rollCall
+            totalAttend, sumAttend, rollCall,
+            refreshProp
         }, dispatch)
     }
 }

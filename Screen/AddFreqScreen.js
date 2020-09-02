@@ -18,6 +18,7 @@ import { districtLevel3 } from '../Actions/districtLevel3'
 import { districtLevel4 } from '../Actions/districtLevel4'
 import { totalAttend } from '../Actions/totalAttend'
 import { sumAttend } from '../Actions/sumAttend'
+import { refreshProp } from '../Actions/refreshProp'
 
 // others
 import { Actions } from 'react-native-router-flux' // pages navigation
@@ -254,6 +255,9 @@ class AddFreqScreen extends Component {
                         }, { name: this.state.freqListName, orderAcord: this.state.orderAcord, member: a })
                     })
                     await AsyncStorage.setItem('frequList', JSON.stringify(e))
+                    let flag = await this.props.refreshFlag.flag
+                    flag = flag + 1
+                    this.props.refreshProp(flag)
                     Actions.pop()
                 }
             } catch (e) { console.log("finalCheck error", e) }
@@ -705,6 +709,7 @@ function mapStateToProps(state) {
         level4: state.level4Reducer.todos,
         tolAtt: state.tolAttReducer,
         sumAtt: state.sumAttReducer,
+        refreshFlag: state.refreshReducer
     }
 }
 
@@ -714,6 +719,7 @@ function mapDispatchToProps(dispatch) {
             toggleLanguage, toogleFontsize, toogleTheme,
             districtLevel2, districtLevel3, districtLevel4,
             totalAttend, sumAttend,
+            refreshProp,
         }, dispatch)
     }
 }

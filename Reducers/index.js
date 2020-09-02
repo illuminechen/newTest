@@ -13,12 +13,14 @@ import level4Reducer from './level4Reducer'// get list from district level4
 import memberReducer from './memberReducer'// get all members list
 import sumAttReducer from './sumAttReducer'// sum of 6 months attendance
 import rollCallReducer from './rollCallReducer'// roll call
+import refreshReducer from './refreshReducer'// send refresh main screen flag
 
 const rootReducer = combineReducers({
     languageReducer, fontsizeReducer, themeReducer,
     gtDistrictReducer, loginReducer, tolAttReducer,
     level2Reducer, level3Reducer, level4Reducer,
-    memberReducer, sumAttReducer, rollCallReducer
+    memberReducer, sumAttReducer, rollCallReducer,
+    refreshReducer,
 })
 
 export default rootReducer
