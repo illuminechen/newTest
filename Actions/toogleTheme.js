@@ -2,7 +2,10 @@ import {
     THEME_STARWHITE, THEME_SUNSHINBLUE, THEME_AQUABLACK, THEME_CALMBLACK,
     THEME_CLASICROSE, THEME_HOMEBROWN, THEME_KICHENCANVA
 } from './constants'
-
+/**
+ * 將主題顏色設定傳到全域props
+ * @param {string} text -  主題顏色
+ */
 export function toogleTheme(text) {
     //console.log('toogletheme', text)
     if (text === 'kichenCanva') {

@@ -1,3 +1,8 @@
+/**
+ * @exports - 召會/大區列表
+ * @param {string} churchList[].label - 召會/大區名稱ex台北市召會
+ * @param {number} churchList[].key - 相對應的key
+ */
 export const churchList = [
     { 'label': '台北市召會', 'key': 1 },
     { 'label': '新北市召會', 'key': 2 },

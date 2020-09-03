@@ -10,6 +10,7 @@ import VisitScreen from './VisitScreen'
 import StaScreen from './StaScreen'
 import AddFreqScreen from './AddFreqScreen'
 import FrequListScreen from './FrequListScreen'
+import EditFrqLstScreen from './EditFrqLstScreen'
 
 class IndexRouter extends Component {
     render() {
@@ -51,6 +52,10 @@ class IndexRouter extends Component {
                     <Scene key="FrequListScreen"
                         hideNavBar={true}
                         component={FrequListScreen}
+                    />
+                    <Scene key="EditFrqLstScreen"
+                        hideNavBar={true}
+                        component={EditFrqLstScreen}
                     />
                 </Stack>
             </Router >

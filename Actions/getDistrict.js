@@ -1,5 +1,7 @@
 import { DISTRICT_SUCCESS, DISTRICT_TODOS, DISTRICT_FALURE } from './constants'
-
+/**
+ * 取得台北市召會所有會所列表
+ */
 export function getDistrict() {
     return (dispatch) => {
         dispatch(getToDos())

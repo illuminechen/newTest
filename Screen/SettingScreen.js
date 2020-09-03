@@ -70,6 +70,9 @@ class SettingScreen extends Component {
         this.setState({ clearFreqOp: false })
         let a = await AsyncStorage.getItem('frequList')
         a === null ? console.log("no frequList") : await AsyncStorage.removeItem('frequList')
+        let flag = await this.props.refreshFlag.flag
+        flag = flag + 1
+        this.props.refreshProp(flag)
     }
     render() {
         return (

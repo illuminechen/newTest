@@ -1,7 +1,14 @@
 import { ROLLCALL_TODOS, ROLLCALL_SUCCESS, ROLLCALL_FAILURE } from './constants'
 import axios from 'axios'
 import qs from 'qs'
-
+/**
+ * 點名，不會有回傳資料到props
+ * @param {string} member_ids - 聖徒id，也可能是array，可一起傳送多人的id 
+ * @param {string} meeting - 聚會項目代號，37主日，40禱告，38家聚，39小排，1473福音
+ * @param {string} year - 年 
+ * @param {*} week - 週數
+ * @param {*} attend - 1是有來，0是沒來
+ */
 export function rollCall(member_ids, meeting, year, week, attend) {
     console.log("Action rollCall", member_ids, meeting, year, week, attend)
     let bodyFormData = ''
@@ -45,7 +52,6 @@ export function rollCall(member_ids, meeting, year, week, attend) {
 }
 
 function getToDos() {
-
     return {
         type: ROLLCALL_TODOS
     }

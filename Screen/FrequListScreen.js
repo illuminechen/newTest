@@ -38,6 +38,18 @@ class FrequListScreen extends Component {
         isSelectAll: false, checkDeleteOp: false,
     }
     async componentDidMount() {
+        await this.getStart()
+        await this.getTotalAtt(), await this.orderAtt()
+    }
+    async componentDidUpdate(prevProps) {
+        if (prevProps.refreshFlag !== this.props.refreshFlag) {
+            //Actions.refresh({ key: this.props.refreshFlag })
+            await this.getStart()
+            await this.getTotalAtt()
+            await this.orderAtt()
+        }
+    }
+    getStart = async () => {
         try {
             const k = await AsyncStorage.getItem('freqListKey')
             let a = await AsyncStorage.getItem('frequList')
@@ -51,9 +63,7 @@ class FrequListScreen extends Component {
                                 : b.orderAcord === '37' ? this.props.lanData.lordTableFull : '',
                 freqList: b.member
             })
-            await this.getTotalAtt(), await this.orderAtt()
         } catch (e) { console.log("componentDidMount", e) }
-
     }
     CalonChange = async (event, date) => {
         this.setState({
@@ -76,15 +86,10 @@ class FrequListScreen extends Component {
     getTotalAtt = async () => {
         const year = this.state.nowYear
         const week = this.state.nowDate
-        await this.props.totalAttend(year, week, '0', '1', '', '',
+        let limit = await this.props.tolAtt.todos.count
+        console.log("RCScreen limit", limit)
+        await this.props.totalAttend(year, week, '0', limit, '', '',
             '', '', this.state.searchData)
-        const totalFetch = await this.props.tolAtt.isFetching
-        if (totalFetch === false) {
-            let limit = await this.props.tolAtt.todos.count
-            console.log("RCScreen limit", limit)
-            await this.props.totalAttend(year, week, '0', limit, '', '',
-                '', '', this.state.searchData)
-        }
     }
     orderAtt = async () => {
         const getTolFetch = await this.props.tolAtt.isFetching
@@ -181,9 +186,6 @@ class FrequListScreen extends Component {
             Actions.pop()
         } catch (e) { console.log("deleteFrqLst error", e) }
     }
-    editFrqLst = () => {
-
-    }
     render() {
         const AttFetch = this.props.tolAtt.isFetching
         return (
@@ -207,7 +209,7 @@ class FrequListScreen extends Component {
                         onPress={() => this.setState({ checkDeleteOp: true })} style={{ elevation: 15 }}
                     />
                     <IconButton icon="pen-plus" size={25} color={this.props.themeData.SthemeC}
-                        onPress={() => this.editFrqLst()} style={{ elevation: 15 }}
+                        onPress={() => Actions.EditFrqLstScreen()} style={{ elevation: 15 }}
                     />
                 </View>
                 <View style={styles.pickerView}>

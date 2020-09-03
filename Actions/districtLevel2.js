@@ -1,10 +1,12 @@
 import { LEVEL2_TODOS, LEVEL2_SUCCESS, LEVEL2_FAILURE } from './constants'
-
+/**
+ * 放入會所id來撈level2全部的排區架構
+ * @param {string} churchid - 會所id 
+ */
 export function districtLevel2(churchid) {
     //console.log("churchid", )
     return (dispatch) => {
         dispatch(getToDos())
-
         return (
             fetch(`https://www.chlife-stat.org/list_churches.php?level=2&parent_id=${churchid}display_cnt=1`,{
                 method: 'GET',
@@ -16,7 +18,6 @@ export function districtLevel2(churchid) {
             )
             .then(res => res.json())
             .then(json => {
-
                 return (dispatch(getToDosSuccess(json)))
             })
             .catch(err => dispatch(getToDosFailure(err)))
@@ -24,7 +25,6 @@ export function districtLevel2(churchid) {
 }
 
 function getToDos() {
-
     return {
         type: LEVEL2_TODOS
     }

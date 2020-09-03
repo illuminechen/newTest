@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import { View, StyleSheet, Alert, TextInput, ScrollView, AsyncStorage } from 'react-native'
+import { View, StyleSheet, Alert, TextInput, ScrollView, AsyncStorage, FlatList } from 'react-native'
 import {
     ActivityIndicator, Button, IconButton,
-    Dialog, Text, Divider, Portal, FAB, Snackbar
+    Dialog, Text, Divider, Portal, FAB, Snackbar, List
 } from 'react-native-paper'
 
 // redux
@@ -29,14 +29,15 @@ class VisitScreen extends Component {
         modeOp: false, lordFreq: 3, lordFreqSh: this.props.lanData.threeperm,
         alotsOp: true,
         genderSel: '', statusSel: '', identitySel: '', groupSel: '',
-        districtOp: true,
-        level2Menu: false, level2: '', level2id: 0,
-        level3Menu: false, level3: '', level3id: 0,
-        level4Men: false, level4: '', level4id: 0,
+        districtOp: false,
+        level2: '', level2id: 0,
+        level3: '', level3id: 0,
+        level4: '', level4id: 0,
         sumOfLordT: [], sumOfGroupM: [], sumOfHomeM: [],
     }
     async componentDidMount() {
-        await this.DistrictRender()
+        await this.getTotalAttVist()
+        await this.orderCal()
     }
     DistrictRender = async () => {
         try {
@@ -52,25 +53,137 @@ class VisitScreen extends Component {
         const level3_id = this.state.level3id
         this.props.districtLevel4(level3_id)
     }
-    getTotalAtt = async () => {
+    getTotalAttVist = async () => {
         const year = moment(new Date()).format("yyyy")
         const week = moment(new Date()).format("ww")
         const month = moment(new Date()).format("MM")
         await this.props.totalAttend(year, week, '0', '1', this.state.genderSel, this.state.statusSel,
-            this.state.identitySel, this.state.groupSel, this.state.searchData)
+            this.state.identitySel, this.state.groupSel, '')
         const totalFetch = await this.props.tolAtt.isFetching
         if (totalFetch === false) {
             let limit = await this.props.tolAtt.todos.count
-            console.log("visitScreen limit", limit)
-            await this.props.totalAttend(year, week, '0', limit, this.state.genderSel, this.state.statusSel,
-                this.state.identitySel, this.state.groupSel, this.state.searchData)
+            console.log("VisitScreen limit", limit)
+            await this.props.totalAttend(year, week, '0', '1202', this.state.genderSel, this.state.statusSel,
+                this.state.identitySel, this.state.groupSel, '')
             const year_from = month - 6 > 0 ? year : year - 1
             const month_from = month - 6 > 0 ? month - 6 : month + 6
             const year_to = month - 1 > 0 ? year : year - 1
             const month_to = month - 1 > 0 ? month - 1 : 11 + month
             await this.props.sumAttend('37', year_from, month_from, year_to, month_to,
-                this.state.searchData, this.state.genderSel, this.state.statusSel, this.state.identitySel,
+                '', this.state.genderSel, this.state.statusSel, this.state.identitySel,
                 this.state.groupSel, limit)
+            this.setState({ sumOfLordT: await this.props.sumAtt.todos.stats.rows })
+            await this.props.sumAttend('38', year_from, month_from, year_to, month_to,
+                '', this.state.genderSel, this.state.statusSel, this.state.identitySel,
+                this.state.groupSel, limit)
+            this.setState({ sumOfHomeM: await this.props.sumAtt.todos.stats.rows })
+            await this.props.sumAttend('39', year_from, month_from, year_to, month_to,
+                '', this.state.genderSel, this.state.statusSel, this.state.identitySel,
+                this.state.groupSel, limit)
+            this.setState({ sumOfGroupM: await this.props.sumAtt.todos.stats.rows })
+        }
+    }
+    orderCal = async () => {
+        const orderCalFetch = await this.props.sumAtt.isFetching
+        let origL = this.state.sumOfLordT; let origH = this.state.sumOfHomeM; let origG = this.state.sumOfGroupM
+        let sumofL = []; let sumofH = []; let sumofG = [];
+        let sumofL2 = []; let sumofH2 = []; let sumofG2 = [];
+        let memInfo = []
+        let tolAttorig = []
+        if (orderCalFetch === false) {
+            origL.forEach((objectss) => {
+                sumofL.push({
+                    '21': objectss["21"] === null ? 0 : parseInt(objectss["21"]),
+                    '22': objectss["22"] === null ? 0 : parseInt(objectss["22"]),
+                    '23': objectss["23"] === null ? 0 : parseInt(objectss["23"]),
+                    '24': objectss["24"] === null ? 0 : parseInt(objectss["24"]),
+                    '25': objectss["25"] === null ? 0 : parseInt(objectss["25"]),
+                    '26': objectss["26"] === null ? 0 : parseInt(objectss["26"]),
+                    '27': objectss["27"] === null ? 0 : parseInt(objectss["27"]),
+                    '28': objectss["28"] === null ? 0 : parseInt(objectss["28"]),
+                    '29': objectss["29"] === null ? 0 : parseInt(objectss["29"]),
+                    '30': objectss["30"] === null ? 0 : parseInt(objectss["30"]),
+                    '31': objectss["31"] === null ? 0 : parseInt(objectss["31"]),
+                    '32': objectss["32"] === null ? 0 : parseInt(objectss["32"]),
+                    '33': objectss["33"] === null ? 0 : parseInt(objectss["33"]),
+                    '34': objectss["34"] === null ? 0 : parseInt(objectss["34"]),
+                    '35': objectss["35"] === null ? 0 : parseInt(objectss["35"]),
+                    '36': objectss["36"] === null ? 0 : parseInt(objectss["36"]),
+                    '37': objectss["37"] === null ? 0 : parseInt(objectss["37"]),
+                    '38': objectss["38"] === null ? 0 : parseInt(objectss["38"]),
+                    '39': objectss["39"] === null ? 0 : parseInt(objectss["39"])
+                })
+            })
+            sumofL2 = sumofL.map(o => Object.keys(o).reduce((t, p) => t + o[p], 0));
+            origH.forEach((objectss) => {
+                sumofH.push({
+                    '21': objectss["21"] === null ? 0 : parseInt(objectss["21"]),
+                    '22': objectss["22"] === null ? 0 : parseInt(objectss["22"]),
+                    '23': objectss["23"] === null ? 0 : parseInt(objectss["23"]),
+                    '24': objectss["24"] === null ? 0 : parseInt(objectss["24"]),
+                    '25': objectss["25"] === null ? 0 : parseInt(objectss["25"]),
+                    '26': objectss["26"] === null ? 0 : parseInt(objectss["26"]),
+                    '27': objectss["27"] === null ? 0 : parseInt(objectss["27"]),
+                    '28': objectss["28"] === null ? 0 : parseInt(objectss["28"]),
+                    '29': objectss["29"] === null ? 0 : parseInt(objectss["29"]),
+                    '30': objectss["30"] === null ? 0 : parseInt(objectss["30"]),
+                    '31': objectss["31"] === null ? 0 : parseInt(objectss["31"]),
+                    '32': objectss["32"] === null ? 0 : parseInt(objectss["32"]),
+                    '33': objectss["33"] === null ? 0 : parseInt(objectss["33"]),
+                    '34': objectss["34"] === null ? 0 : parseInt(objectss["34"]),
+                    '35': objectss["35"] === null ? 0 : parseInt(objectss["35"]),
+                    '36': objectss["36"] === null ? 0 : parseInt(objectss["36"]),
+                    '37': objectss["37"] === null ? 0 : parseInt(objectss["37"]),
+                    '38': objectss["38"] === null ? 0 : parseInt(objectss["38"]),
+                    '39': objectss["39"] === null ? 0 : parseInt(objectss["39"])
+                })
+            })
+            sumofH2 = sumofH.map(o => Object.keys(o).reduce((t, p) => t + o[p], 0));
+            origG.forEach((objectss) => {
+                sumofG.push({
+                    '21': objectss["21"] === null ? 0 : parseInt(objectss["21"]),
+                    '22': objectss["22"] === null ? 0 : parseInt(objectss["22"]),
+                    '23': objectss["23"] === null ? 0 : parseInt(objectss["23"]),
+                    '24': objectss["24"] === null ? 0 : parseInt(objectss["24"]),
+                    '25': objectss["25"] === null ? 0 : parseInt(objectss["25"]),
+                    '26': objectss["26"] === null ? 0 : parseInt(objectss["26"]),
+                    '27': objectss["27"] === null ? 0 : parseInt(objectss["27"]),
+                    '28': objectss["28"] === null ? 0 : parseInt(objectss["28"]),
+                    '29': objectss["29"] === null ? 0 : parseInt(objectss["29"]),
+                    '30': objectss["30"] === null ? 0 : parseInt(objectss["30"]),
+                    '31': objectss["31"] === null ? 0 : parseInt(objectss["31"]),
+                    '32': objectss["32"] === null ? 0 : parseInt(objectss["32"]),
+                    '33': objectss["33"] === null ? 0 : parseInt(objectss["33"]),
+                    '34': objectss["34"] === null ? 0 : parseInt(objectss["34"]),
+                    '35': objectss["35"] === null ? 0 : parseInt(objectss["35"]),
+                    '36': objectss["36"] === null ? 0 : parseInt(objectss["36"]),
+                    '37': objectss["37"] === null ? 0 : parseInt(objectss["37"]),
+                    '38': objectss["38"] === null ? 0 : parseInt(objectss["38"]),
+                    '39': objectss["39"] === null ? 0 : parseInt(objectss["39"])
+                })
+                memInfo.push({
+                    'date_baptized': objectss['date_baptized'],
+                    'role': objectss['role'],
+                })
+            })
+            sumofG2 = sumofG.map(o => Object.keys(o).reduce((t, p) => t + o[p], 0));
+        }
+        const getTolFetch = await this.props.tolAtt.isFetching
+        if (getTolFetch === false) {
+            const item = await this.props.tolAtt.todos.members
+            item.forEach((obj, index) => {
+                tolAttorig.push({
+                    member_name: obj['member_name'],
+                    path: obj['path'],
+                    church_name: obj['church_name'],
+                    sex: obj['sex'],
+                    date_baptized: memInfo[index]['date_baptized'],
+                    role: memInfo[index]['role'],
+                    sumL: sumofL2[index],
+                    sumH: sumofH2[index],
+                    sumG: sumofG2[index]
+                })
+            })
         }
     }
     render() {
@@ -88,7 +201,7 @@ class VisitScreen extends Component {
                         onPress={() => this.setState({ alotsOp: true })} style={{ elevation: 15 }}
                     />
                     <IconButton icon="account-group" size={25} color={this.props.themeData.SthemeC}
-                        onPress={this.DistrictRender} style={{ elevation: 15 }}
+                        onPress={() => this.DistrictRender()} style={{ elevation: 15 }}
                     />
                 </View>
                 <Portal>

@@ -25,10 +25,10 @@ import { Actions } from 'react-native-router-flux' // pages navigation
 import moment from 'moment' // time
 /**
  * 
- * @class AddFreqScreen 新增新的常用名單
+ * @class EditFreqScreen 編輯常用名單
  * @extends {Component}
  */
-class AddFreqScreen extends Component {
+class EditFrqLstScreen extends Component {
     state = {
         /**搜尋聖徒姓名 */
         searchData: '',
@@ -74,17 +74,35 @@ class AddFreqScreen extends Component {
         freqListNameOp: false,
         /**數字變動時，flatList刷新 */
         flatListRender: 0,
+        /**名單長度，判斷是否可以全選 */
+        limit: 0,
         /**是否全選 */
         isAllSelect: false,
-        /**名單長度，判斷是否可以全選 */
-        limit: 0
     }
     async componentDidMount() {
-        await this.getTotalAtt(), await this.orderCal()
+        try {
+            /**所選擇的常用名單index */
+            const k = await AsyncStorage.getItem('freqListKey')
+            /**所選擇的常用名單內容 */
+            let a = await AsyncStorage.getItem('frequList')
+            /**轉成object的AsyncStorage裡面的常用名單 */
+            let b = JSON.parse(a)[k]
+            this.setState({
+                orderAcord: b.orderAcord,
+                showOrderAcord: b.orderAcord === '40' ? this.props.lanData.prayerFull
+                    : b.orderAcord === '38' ? this.props.lanData.homeMetFull
+                        : b.orderAcord === '39' ? this.props.lanData.grouMetFull
+                            : b.orderAcord === '1473' ? this.props.lanData.gospVisFull
+                                : b.orderAcord === '37' ? this.props.lanData.lordTableFull : '',
+                freqList: b.member,
+                freqListName: b.name
+            })
+            await this.getTotalAtt(), this.orderCal()
+        } catch (e) { console.log("EditFrqLstScreen mount error", e) }
     }
     /**
-     * 放入會所id來撈level2全部的排區架構
-     */
+    * 放入會所id來撈level2全部的排區架構
+    */
     DistrictRender = async () => {
         try {
             this.props.districtLevel2(await AsyncStorage.getItem('church_id'))
@@ -187,6 +205,7 @@ class AddFreqScreen extends Component {
         }
         toltmp.sort((a, b) => { return b.sum - a.sum })//照sum降冪排序
         this.setState({ endsort: toltmp })
+        //console.log("getTodalAtt", toltmp)
         console.log("getTotalAtt size", (JSON.stringify(toltmp).length) / 1024, "Kbyte")
         this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
         if (this.state.freqList) {
@@ -196,6 +215,7 @@ class AddFreqScreen extends Component {
                 let indexSh = toltmp.map(m => m.member_id).indexOf(frqLst[id]['member_id'])
                 toltmp[indexSh]['freq'] = 1
             })
+            this.setState({ endsort: toltmp })
         }
     }
     /**
@@ -344,28 +364,26 @@ class AddFreqScreen extends Component {
             try {
                 /**在AsyncStorage上面的常用名單 */
                 let c = await AsyncStorage.getItem('frequList')
-                if (c === null) {
-                    await AsyncStorage.setItem('frequList', JSON.stringify(b))
-                    Actions.MainScreen()
-                } else {
-                    /**AsyncStorage上面的常用名單的object */
-                    let d = []
-                    d = JSON.parse(c)
-                    /**剛剛選好的名單加回去常用名單 */
-                    let e = []
-                    d.forEach(obj => {
-                        e.push({
-                            member: obj.member, name: obj.name, orderAcord: obj.orderAcord
-                        }, { name: this.state.freqListName, orderAcord: this.state.orderAcord, member: a })
-                    })
-                    await AsyncStorage.setItem('frequList', JSON.stringify(e))
-                    /**flag每有變動，有在監控prevProps.refreshFlag的頁面會刷新 */
-                    let flag = await this.props.refreshFlag.flag
-                    flag = flag + 1
-                    this.props.refreshProp(flag)
-                    Actions.pop()
-                }
+                const k = await AsyncStorage.getItem('freqListKey')
+                /**AsyncStorage上面的常用名單的object */
+                let d = []
+                d = JSON.parse(c)
+                let remove = d.splice(k, 1)
+                console.log("editFrqLst", d)
+                /**剛剛選好的名單加回去常用名單 */
+                let e = []
+                d.forEach(obj => {
+                    e.push({
+                        member: obj.member, name: obj.name, orderAcord: obj.orderAcord
+                    }, { name: this.state.freqListName, orderAcord: this.state.orderAcord, member: a })
+                })
+                await AsyncStorage.setItem('frequList', JSON.stringify(e))
+                /**flag每有變動，有在監控prevProps.refreshFlag的頁面會刷新 */
+                let flag = await this.props.refreshFlag.flag
+                flag = flag + 1
+                this.props.refreshProp(flag)
             } catch (e) { console.log("finalCheck error", e) }
+            Actions.pop()
         }
     }
     /**
@@ -836,7 +854,7 @@ function mapDispatchToProps(dispatch) {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(AddFreqScreen)
+export default connect(mapStateToProps, mapDispatchToProps)(EditFrqLstScreen)
 
 const styles = StyleSheet.create({
     container: {

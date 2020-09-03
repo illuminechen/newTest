@@ -14,16 +14,41 @@ import { getDistrict } from '../Actions/getDistrict'
 import { login } from '../Actions/login'
 
 //components
-import { churchList } from '../Component/churchList'
+import { churchList } from '../Component/churchList' // 召會列表
 
 import { Actions } from 'react-native-router-flux' // pages navigation
 import moment from 'moment' // time
 import * as firebase from 'firebase'
 
+/**
+ * 
+ * @class LoginScreen 登入頁面
+ * @extends {Component}
+ */
 class LoginScreen extends Component {
     state = {
-        districtName: '台北市召會', districtId: '1', districtOp: false, churchName: '', churchOp: false,
-        account: '', captcha_code: '', church_id: '0', district: '1', language: 'zh-tw', pwd: '',
+        /**召會/大區名稱，除了台北市召會，其他的選了不會有事情發生 */
+        districtName: '台北市召會',
+        /**與districtName對應的召會/大區id */
+        districtId: '1',
+        /**開關districName的Dialog */
+        districtOp: false,
+        /**會所名稱 */
+        churchName: '',
+        /**開關churchName會所列表的Dialog */
+        churchOp: false,
+        /**帳號 */
+        account: '',
+        /**驗證碼，目前沒用到 */
+        captcha_code: '',
+        /**會所id */
+        church_id: '0',
+        /**排區架構第一層之意，在此都為1 */
+        district: '1',
+        /**語言選擇，default中文  */
+        language: 'zh-tw',
+        /**密碼  */
+        pwd: '',
     }
     async componentDidMount() {
         try {
@@ -51,20 +76,34 @@ class LoginScreen extends Component {
             console.log("componentDidMount", e)
         }
     }
+    /**
+     * 當this.props.loginLength改變時，也就是從沒有登入變成登入成功，或登入失敗變成登入成功，或沒有登入變成登入失敗
+     * 執行loginSelect
+     * @param {object} prevProps - 前一個props 
+     */
     componentDidUpdate(prevProps) {
         if (prevProps.loginLength !== this.props.loginLength) {
             this.loginSelect()
         }
     }
+    /**
+     * 取得台北市召會的會所列表
+     */
     getDistrictApi = () => {
         if (this.state.districtId === '1') {
             this.props.getDistrict()
         }
     }
+    /**
+     * 執行登入動作
+     */
     onLogin = () => {
         const { account, church_id, district, language, pwd } = this.state
         this.props.login({ account, church_id, district, language, pwd })
     }
+    /**
+     * 用回傳的html.length判斷是否成功登入
+     * */
     loginSelect = async () => {
         if (this.props.loginLength >= 112000) {
             try {

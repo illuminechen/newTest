@@ -18,43 +18,67 @@ import { sumAttend } from '../Actions/sumAttend'
 import { Actions } from 'react-native-router-flux' // pages navigation
 import moment from 'moment' // time
 import * as firebase from 'firebase'
-
+/**
+ * 
+ * @class MainScreen 首頁
+ * @extends {Component}
+ */
 class MainScreen extends Component {
     state = {
+        /**週次，initial現在 */
         nowWeek: moment(new Date()).format("ww"),
+        /**月，initial現在 */
         nowMonth: moment(new Date()).format("MM"),
-        nowYear: moment(new Date()).format("yyyy"), totalAttArray: [], orderArray: [],
+        /**年，initial現在 */
+        nowYear: moment(new Date()).format("yyyy"),
+        /**常用名單 */
         frequList: [],
-        editFrqLstOp: false,
     }
     async componentDidMount() {
         this.getTotalAtt()
         this.getStart()
     }
-    componentDidUpdate(prevProps) {
+    /**
+     * prevProps.refreshFlag改變時，刷新頁面
+     * @param {object} prevProps - 前一個props 
+     */
+    async componentDidUpdate(prevProps) {
         if (prevProps.refreshFlag !== this.props.refreshFlag) {
-            Actions.refresh({ key: this.props.refreshFlag })
-            this.getStart()
-            this.getTotalAtt()
+            //Actions.refresh({ key: this.props.refreshFlag })
+            await this.getStart()
+            await this.getTotalAtt()
         }
     }
-    getStart = async()=> {
+    /**
+     * 從AsyncStorage找出常用名單
+     */
+    getStart = async () => {
         try {
             let a = await AsyncStorage.getItem('frequList')
-            let b = JSON.parse(a)
-            let c = []
-            b.forEach((e, index) => {
-                c.push({ name: e.name, key: index })
-            });
-            this.setState({ frequList: c })
-            console.log("freqlist MainScreen", this.state.frequList)
+            if (a) {
+                let b = JSON.parse(a)
+                let c = []
+                b.forEach((e, index) => {
+                    c.push({ name: e.name, key: index })
+                });
+                this.setState({ frequList: c })
+                console.log("freqlist MainScreen", b, this.state.frequList)
+            }
         } catch (e) { console.log("mainScreen component error", e) }
     }
+    /**
+     * 呼叫toltalAttend，找出目前點名各個聚會項目數據
+     */
     getTotalAtt = async () => {
         const year = this.state.nowYear
         const week = this.state.nowWeek
         await this.props.totalAttend(year, week, '0', '1', '', '', '', '', '')
     }
+    /**
+     * 將所選擇的常用名單index存入AsyncStorage
+     * 跳轉頁面到常用名單
+     * @param {number} index - 選擇的常用名單的index 
+     */
     callFreqList = async (index) => {
         try {
             await AsyncStorage.setItem('freqListKey', JSON.stringify(index))
@@ -153,15 +177,6 @@ class MainScreen extends Component {
                             onPress={() => Actions.AddFreqScreen()}
                         >{this.props.lanData.addNew}</Button>
                     </View>
-                    <Portal>
-                        <Dialog
-                            visible={this.state.editFrqLstOp}
-                            style={this.props.themeData.LthemeB}
-                            onDismiss={() => this.setState({ editFrqLstOp: false })}
-                        >
-
-                        </Dialog>
-                    </Portal>
                 </View>
             )
         }
@@ -170,7 +185,7 @@ class MainScreen extends Component {
 
 function mapStateToProps(state) {
     //console.log("mapState1", state.tolAttReducer.todos.count)
-    console.log("mapState2", state.refreshReducer.flag)
+    //console.log("mapState2", state.refreshReducer.flag)
     return {
         lanData: state.languageReducer.lanData,
         ftszData: state.fontsizeReducer.ftszData,

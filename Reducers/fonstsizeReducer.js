@@ -1,6 +1,5 @@
 import fontSize from '../Component/fontSize'
 import { FONTSIZE_SMALL, FONTSIZE_MEDIUM, FONTSIZE_LARGE, FONTSIZE_XLARGE } from '../Actions/constants'
-
 const initialState = {
     ftszData: fontSize.medium,
 }

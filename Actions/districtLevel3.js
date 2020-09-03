@@ -1,5 +1,8 @@
 import {LEVEL3_TODOS, LEVEL3_SUCCESS, LEVEL3_FAILURE} from './constants'
-
+/**
+ * 放入level2id撈level3全部的排區架構
+ * @param {string} level2_id - 第二層排區架構的id 
+ */
 export function districtLevel3(level2_id) {
     //console.log(level2_id)
     return (dispatch) => {

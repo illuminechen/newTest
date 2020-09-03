@@ -24,24 +24,64 @@ import { rollCall } from '../Actions/rollCall'
 import DateTimePicker from '@react-native-community/datetimepicker';// default calender picker
 import { Actions } from 'react-native-router-flux' // pages navigation
 import moment from 'moment' // time
-
-class LoginScreen extends Component {
+/**
+ * 
+ * @class RCScreen 點名頁面
+ * @extends {Component}
+ */
+class RCScreen extends Component {
     state = {
+        /**搜尋聖徒姓名 */
         searchData: '',
+        /**週次，initial現在 */
         nowDate: moment(new Date()).format("ww"),
+        /**年，initial現在 */
         nowYear: moment(new Date()).format("yyyy"),
+        /**月，initial現在 */
         nowMonth: moment(new Date()).format("MM"),
-        showCalender: false, CalenderValue: new Date(), showSnackbar: false,
+        /**開關日曆 */
+        showCalender: false,
+        /**日曆顯示的值，initail今天 */
+        CalenderValue: new Date(),
+        /**開關snackbar，提醒選擇的週次日期 */
+        showSnackbar: false,
+        /**搭配snackbar，顯示週次起始日期 */
         dateStart: moment(new Date()).day("Monday").format("YYYY/MM/DD"),
+        /**搭配snackbar，顯示週次結束日期 */
         dateEnd: moment(new Date()).day("Monday").day(7).format("YYYY/MM/DD"),
+        /**開關dialog，性別、狀態、身分、群組 */
         alotsOp: false,
-        genderSel: '', statusSel: '', identitySel: '', groupSel: '',
+        /**性別 */
+        genderSel: '',
+        /**狀態，enable正常，disable停用，visit來訪，moved遷出 */
+        statusSel: '',
+        /**身分，s聖徒，f福音朋友 */
+        identitySel: '',
+        /**群組，年齡層之意，學齡前、小學、中學、大專、青職、青壯、中壯、年長 */
+        groupSel: '',
+        /**開關排區架構的dialog */
         districtOp: false,
-        level2Menu: false, level2: '', level2id: 0,
-        level3Menu: false, level3: '', level3id: 0,
-        level4Men: false, level4: '', level4id: 0,
-        orderAcord: '37', showOrderAcord: this.props.lanData.lordTableFull, orderAcordOp: false,
+        /**第二層排區架構名稱 */
+        level2: '',
+        /**第二層排區架構id */
+        level2id: 0,
+        /**第三層排區架構名稱 */
+        level3: '',
+        /**第三層排區架構id */
+        level3id: 0,
+        /**第四層排區架構名稱 */
+        level4: '',
+        /**第四層排區架構id */
+        level4id: 0,
+        /**聚會項目代號，37主日，40禱告，38家聚，39小排，1473福音 */
+        orderAcord: '37',
+        /**聚會項目名稱 */
+        showOrderAcord: this.props.lanData.lordTableFull,
+        /**開關dialog，聚會選項 */
+        orderAcordOp: false,
+        /**給flatList顯示用，螢幕上最終處理好的資料 */
         endsort: [],
+        /**數字變動時，flatList刷新 */
         flatListRender: 0,
     }
     async componentDidMount() {
@@ -55,6 +95,11 @@ class LoginScreen extends Component {
         }
         await this.getTotalAtt(), await this.orderCal()
     }
+    /**
+     * 日曆選完確定之後重設日期，資料內容重刷成該週資料
+     * @param {object} event - 有東西的時候表示日曆日期有動過，DateTimePicker自動生成
+     * @param {string} date - 用moment可轉成日期格式，DateTimePicker自動生成
+     */
     CalonChange = async (event, date) => {
         this.setState({
             CalenderValue: date,
@@ -73,20 +118,32 @@ class LoginScreen extends Component {
             } else { await this.orderCal() }
         }
     }
+    /**
+     * 放入會所id來撈level2全部的排區架構
+     */
     DistrictRender = async () => {
         try {
             this.props.districtLevel2(await AsyncStorage.getItem('church_id'))
             this.setState({ districtOp: true })
         } catch (e) { console.log("DistrictRender error", e) }
     }
+    /**
+     * 放入level2id撈level3全部的排區架構
+     */
     DistrictRender2 = () => {
         const level2_id = this.state.level2id
         this.props.districtLevel3(level2_id)
     }
+    /**
+     * 放入level3id撈level4全部的排區架構
+     */
     DistrictRender3 = () => {
         const level3_id = this.state.level3id
         this.props.districtLevel4(level3_id)
     }
+    /**
+     * call toltalAttend, sumAttend api
+     */
     getTotalAtt = async () => {
         const year = this.state.nowYear
         const week = this.state.nowDate
@@ -108,9 +165,15 @@ class LoginScreen extends Component {
                 this.state.groupSel, limit)
         }
     }
+    /**
+     * 從toltalAtt和sumAtt整合資料，合併、照聚會項目排序
+     */
     orderCal = async () => {
+        /**sumAtt抓資料結束時是false */
         const orderCalFetch = await this.props.sumAtt.isFetching
+        /**接收每週聚會資料 */
         let tmp = []
+        /**加總每週數據成 */
         let tmpp = []
         if (orderCalFetch === false) {
             const item = await this.props.sumAtt.todos.stats.rows
@@ -137,9 +200,11 @@ class LoginScreen extends Component {
                     '39': objectss["39"] === null ? 0 : parseInt(objectss["39"])
                 })
             })
-            tmpp = tmp.map(o => Object.keys(o).reduce((t, p) => t + o[p], 0));
+            tmpp = tmp.map(o => Object.keys(o).reduce((t, p) => t + o[p], 0));//加總每週數據
         }
+        /**tolAtt抓資料結束時是false */
         const getTolFetch = await this.props.tolAtt.isFetching
+        /**接收sumAtt和tolAtt合併資料並排序 */
         let toltmp = []
         if (getTolFetch === false) {
             const item = await this.props.tolAtt.todos.members
@@ -157,23 +222,32 @@ class LoginScreen extends Component {
                 })
             })
         }
-        toltmp.sort((a, b) => { return b.sum - a.sum })
+        toltmp.sort((a, b) => { return b.sum - a.sum })//照sum降冪排序
         this.setState({ endsort: toltmp })
         console.log("getTodalAtt", toltmp)
         console.log("getTotalAtt size", (JSON.stringify(toltmp).length) / 1024, "Kbyte")
         this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
     }
+    /**
+     * 照性別、狀態、身分、群組、搜尋、排區架構篩選 
+     * */
     arrayFilter = async () => {
         if (this.state.statusSel || this.state.identitySel || this.state.groupSel) {
             await this.getTotalAtt()
             console.log("recalApi", this.state.groupSel)
         }
         await this.orderCal()
+        /**給flatList顯示用，螢幕上最終處理好的資料 */
         const obj = this.state.endsort
+        /**性別 */
         const gender = this.state.genderSel
+        /**搜尋聖徒姓名 */
         const search = this.state.searchData
+        /**接收篩選後的資料，重複使用 */
         var temp = []
+        /**篩過排區後篩性別、搜尋用 */
         var districtemp = []
+        /**判斷排區架構選到哪一層 */
         const ttmp = JSON.stringify(this.state.level2id + this.state.level3id + this.state.level4id).length
         if (this.state.level2id || this.state.level3id || this.state.level4id) {
             if (ttmp === 1) {
@@ -225,20 +299,30 @@ class LoginScreen extends Component {
             } else this.setState({ alotsOp: false })
         }
     }
+    /**
+     * 清除所有篩選項目回復到預設
+     */
     clearFilter = () => {
         this.setState({
             searchData: '', genderSel: '', statusSel: '', identitySel: '', groupSel: '',
             level2id: 0, level3id: 0, level4id: 0
         }, async () => { await this.getTotalAtt(), await this.orderCal() })
     }
+    /**
+     * 點名
+     * @param {string} id - 聖徒id 
+     * @param {number} origAtt - 原本是有來1或沒來0
+     */
     rollCall = async (id, origAtt) => {
         //console.log("rollCall", id, origAtt)
         origAtt === 0 ?
             await this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '1')
             : await this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '0')
+        /**給flatList顯示用，螢幕上最終處理好的資料 */
         let b = this.state.endsort.slice(0, 250)
+        /**該聖徒在endsort上面所在的位置index */
         let index = b.map(member => member.member_id).indexOf(id)
-        //console.log('index', index)
+        /**判斷點名聚會項目 */
         let Att = ''
         this.state.orderAcord === "37" ? Att = 'lordT'
             : this.state.orderAcord === "40" ? Att = 'prayerM'
@@ -250,6 +334,9 @@ class LoginScreen extends Component {
         this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
         console.log("changeState", this.state.endsort[index])
     }
+    /**
+     * 照聚會項目重新call聚會資料並排續
+     */
     reOrder = async () => {
         await this.getTotalAtt()
         await this.orderCal()
@@ -678,7 +765,7 @@ function mapDispatchToProps(dispatch) {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(LoginScreen)
+export default connect(mapStateToProps, mapDispatchToProps)(RCScreen)
 
 const styles = StyleSheet.create({
     container: {
