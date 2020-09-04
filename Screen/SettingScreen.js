@@ -10,17 +10,37 @@ import { connect } from 'react-redux'
 import { toggleLanguage } from '../Actions/toogleLanguage'
 import { toogleFontsize } from '../Actions/toogleFontsize'
 import { toogleTheme } from '../Actions/toogleTheme'
+import { refreshProp } from '../Actions/refreshProp'
 
 //components
 
-
 import { Actions } from 'react-native-router-flux' // pages navigation
-
+/**
+ * 
+ * @class SettingScreen 設定頁面
+ * @extends {Component}
+ */
 class SettingScreen extends Component {
     state = {
-        fontSize: 'medium', fontSizeOp: false, fontSizeShow: this.props.lanData.middle,
-        theme: 'starWhite', themeOp: false, themeShow: this.props.lanData.theme1,
-        language: 'zh', lanOp: false, lanShow: this.props.lanData.chzh,
+        /**字體大小，default medium */
+        fontSize: 'medium',
+        /**開關字體大小選擇的dialog */
+        fontSizeOp: false,
+        /**字體大小文字顯示 */
+        fontSizeShow: this.props.lanData.middle,
+        /**主題顏色，default starWhite */
+        theme: 'starWhite',
+        /**開關主題顏色選擇的dialog */
+        themeOp: false,
+        /**主題顏色文字顯示 */
+        themeShow: this.props.lanData.theme1,
+        /**語言，en英，zh繁中 */
+        language: 'zh',
+        /**開關語言選擇的dialog */
+        lanOp: false,
+        /**語言文字顯示 */
+        lanShow: this.props.lanData.chzh,
+        /**開關是否清除所有常用名單的dialog */
         clearFreqOp: false,
     }
     async componentDidMount() {
@@ -45,6 +65,9 @@ class SettingScreen extends Component {
             }
         } catch (e) { console.log("componenetDidMount error", e) }
     }
+    /**
+     * 將字體大小存入AsyncStorage
+     */
     onFontsize = async () => {
         this.props.toogleFontsize(this.state.fontSize)
         try {
@@ -52,6 +75,9 @@ class SettingScreen extends Component {
             console.log(await AsyncStorage.getItem('fontSize'), "getItem fontsize")
         } catch (e) { console.log("save font error", e) }
     }
+    /**
+     * 將主題顏色存入AsyncStorage
+     */
     onTheme = async () => {
         this.props.toogleTheme(this.state.theme)
         try {
@@ -59,6 +85,9 @@ class SettingScreen extends Component {
             console.log(await AsyncStorage.getItem('theme'), "getItem theme")
         } catch (e) { console.log("save theme error", e) }
     }
+    /**
+     * 將語言存入AsyncStorage
+     */
     onLanguage = async () => {
         this.props.toggleLanguage(this.state.language)
         try {
@@ -66,10 +95,15 @@ class SettingScreen extends Component {
             console.log(await AsyncStorage.getItem('language'), "getItem language")
         } catch (e) { console.log("save language error", e) }
     }
+    /**
+     * 從AsyncStroage清除所有常用名單
+     * 改變flag讓MainScreen刷新常用名單
+     */
     clearFreq = async () => {
         this.setState({ clearFreqOp: false })
         let a = await AsyncStorage.getItem('frequList')
         a === null ? console.log("no frequList") : await AsyncStorage.removeItem('frequList')
+        /**刷新用旗標 */
         let flag = await this.props.refreshFlag.flag
         flag = flag + 1
         this.props.refreshProp(flag)
@@ -229,6 +263,7 @@ function mapStateToProps(state) {
         lanData: state.languageReducer.lanData,
         ftszData: state.fontsizeReducer.ftszData,
         themeData: state.themeReducer.themeData,
+        refreshFlag: state.refreshReducer.flag
     }
 }
 
@@ -236,6 +271,7 @@ function mapDispatchToProps(dispatch) {
     return {
         ...bindActionCreators({
             toggleLanguage, toogleFontsize, toogleTheme,
+            refreshProp,
         }, dispatch)
     }
 }

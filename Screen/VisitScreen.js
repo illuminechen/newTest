@@ -26,7 +26,8 @@ import moment from 'moment' // time
 
 class VisitScreen extends Component {
     state = {
-        modeOp: false, lordFreq: 3, lordFreqSh: this.props.lanData.threeperm,
+        modeOp: false, lordFreq: 4, lordFreqSh: this.props.lanData.fourperm,
+        indexThree: 0, indexOne: 0, indexNon: 0,
         alotsOp: true,
         genderSel: '', statusSel: '', identitySel: '', groupSel: '',
         districtOp: false,
@@ -34,10 +35,14 @@ class VisitScreen extends Component {
         level3: '', level3id: 0,
         level4: '', level4id: 0,
         sumOfLordT: [], sumOfGroupM: [], sumOfHomeM: [],
+        endsort: [],
+        priorityOp: false, priority: '主>家>排', prioritySh: this.props.lanData.LoHoGr,
+        /**數字變動時，flatList刷新 */
+        flatListRender: 0,
     }
     async componentDidMount() {
         await this.getTotalAttVist()
-        await this.orderCal()
+        await this.onPriority()
     }
     DistrictRender = async () => {
         try {
@@ -174,16 +179,105 @@ class VisitScreen extends Component {
             item.forEach((obj, index) => {
                 tolAttorig.push({
                     member_name: obj['member_name'],
+                    member_id: obj['member_id'],
                     path: obj['path'],
                     church_name: obj['church_name'],
                     sex: obj['sex'],
                     date_baptized: memInfo[index]['date_baptized'],
                     role: memInfo[index]['role'],
-                    sumL: sumofL2[index],
-                    sumH: sumofH2[index],
-                    sumG: sumofG2[index]
+                    sumL: ((sumofL2[index]) / 4.7).toFixed(1),
+                    sumH: ((sumofH2[index]) / 4.7).toFixed(1),
+                    sumG: ((sumofG2[index]) / 4.7).toFixed(1)
                 })
             })
+        }
+        this.setState({ endsort: tolAttorig })
+        //console.log("endsort",this.state.endsort)
+    }
+    onPriority = async () => {
+        await this.orderCal()
+        let sort = this.state.endsort
+        let priority = this.state.priority
+        let id3 = ''
+        let id1 = ''
+        let idNon = ''
+        if (priority === '主>家>排') {
+            sort.sort((a, b) => { return b.sumG - a.sumG })
+            sort.sort((a, b) => { return b.sumH - a.sumH })
+            sort.sort((a, b) => { return b.sumL - a.sumL })
+            id3 = sort.filter(e => e.sumL === '3.0')[0]['member_id']
+            id3 = sort.findIndex(e => e.member_id === id3)
+            id1 = sort.filter(e => e.sumL === '0.9')[0]['member_id']
+            id1 = sort.findIndex(e => e.member_id === id1)
+            idNon = sort.filter(e => e.sumL === '0.0')[0]['member_id']
+            idNon = sort.findIndex(e => e.member_id === idNon)
+        } else if (priority === '主>排>家') {
+            sort.sort((a, b) => { return b.sumH - a.sumH })
+            sort.sort((a, b) => { return b.sumG - a.sumG })
+            sort.sort((a, b) => { return b.sumL - a.sumL })
+            id3 = sort.filter(e => e.sumL === '3.0')[0]['member_id']
+            id3 = sort.findIndex(e => e.member_id === id3)
+            id1 = sort.filter(e => e.sumL === '0.9')[0]['member_id']
+            id1 = sort.findIndex(e => e.member_id === id1)
+            idNon = sort.filter(e => e.sumL === '0.0')[0]['member_id']
+            idNon = sort.findIndex(e => e.member_id === idNon)
+        } else if (priority === '家>主>排') {
+            sort.sort((a, b) => { return b.sumG - a.sumG })
+            sort.sort((a, b) => { return b.sumL - a.sumL })
+            sort.sort((a, b) => { return b.sumH - a.sumH })
+            id3 = sort.filter(e => e.sumH === '3.0')[0]['member_id']
+            id3 = sort.findIndex(e => e.member_id === id3)
+            id1 = sort.filter(e => e.sumH === '0.9')[0]['member_id']
+            id1 = sort.findIndex(e => e.member_id === id1)
+            idNon = sort.filter(e => e.sumH === '0.0')[0]['member_id']
+            idNon = sort.findIndex(e => e.member_id === idNon)
+        } else if (priority === '家>排>主') {
+            sort.sort((a, b) => { return b.sumL - a.sumL })
+            sort.sort((a, b) => { return b.sumG - a.sumG })
+            sort.sort((a, b) => { return b.sumH - a.sumH })
+            id3 = sort.filter(e => e.sumH === '3.0')[0]['member_id']
+            id3 = sort.findIndex(e => e.member_id === id3)
+            id1 = sort.filter(e => e.sumH === '0.9')[0]['member_id']
+            id1 = sort.findIndex(e => e.member_id === id1)
+            idNon = sort.filter(e => e.sumH === '0.0')[0]['member_id']
+            idNon = sort.findIndex(e => e.member_id === idNon)
+        } else if (priority === '排>主>家') {
+            sort.sort((a, b) => { return b.sumH - a.sumH })
+            sort.sort((a, b) => { return b.sumL - a.sumL })
+            sort.sort((a, b) => { return b.sumG - a.sumG })
+            id3 = sort.filter(e => e.sumG === '3.0')[0]['member_id']
+            id3 = sort.findIndex(e => e.member_id === id3)
+            id1 = sort.filter(e => e.sumG === '0.9')[0]['member_id']
+            id1 = sort.findIndex(e => e.member_id === id1)
+            idNon = sort.filter(e => e.sumG === '0.0')[0]['member_id']
+            idNon = sort.findIndex(e => e.member_id === idNon)
+        } else if (priority === '排>家>主') {
+            sort.sort((a, b) => { return b.sumL - a.sumL })
+            sort.sort((a, b) => { return b.sumH - a.sumH })
+            sort.sort((a, b) => { return b.sumG - a.sumG })
+            id3 = sort.filter(e => e.sumG === '3.0')[0]['member_id']
+            id3 = sort.findIndex(e => e.member_id === id3)
+            id1 = sort.filter(e => e.sumG === '0.9')[0]['member_id']
+            id1 = sort.findIndex(e => e.member_id === id1)
+            idNon = sort.filter(e => e.sumG === '0.0')[0]['member_id']
+            idNon = sort.findIndex(e => e.member_id === idNon)
+        }
+        this.setState({
+            endsort: sort, priorityOp: false,
+            indexThree: id3, indexOne: id1, indexNon: idNon
+        })
+        this.setState(prevState => ({ flatListRender: prevState.flatListRender + 1 }))
+    }
+    onFrequency = () => {
+        this.setState({ modeOp: false })
+        let freq = this.state.lordFreq
+        let index = 0
+        if (freq === 3) {
+            index = this.state.indexThree
+        } else if (freq === 4) {
+            index = this.state.indexOne
+        } else if (freq === 1) {
+            index = this.state.indexNon
         }
     }
     render() {
@@ -204,6 +298,41 @@ class VisitScreen extends Component {
                         onPress={() => this.DistrictRender()} style={{ elevation: 15 }}
                     />
                 </View>
+                <View style={styles.pickerView}>
+                    <Button
+                        mode="contained" icon="menu-down"
+                        labelStyle={[this.props.ftszData.paragraph, this.props.themeData.Ltheme]}
+                        style={[this.props.themeData.SthemeB, { borderRadius: 18, elevation: 12, marginHorizontal: 5 }]}
+                        onPress={() => this.setState({ priorityOp: true })}
+                    >{this.state.prioritySh}</Button>
+                </View>
+                {AttFetch ?
+                    <View style={[styles.actInd, this.props.themeData.MthemeB]}>
+                        <ActivityIndicator animating={true} color="gray" size='large' />
+                    </View> :
+                    <View style={[this.props.themeData.MthemeB, { flex: 1, width: "92%", justifyContent: 'center' }]}>
+                        <FlatList
+                            ref={(ref) => this.myScroll = ref}
+                            data={(this.state.endsort).slice(0, 500)}
+                            removeClippedSubviews={true}//default false
+                            maxToRenderPerBatch={15}//default 10
+                            updateCellsBatchingPeriod={120}//default 50 misec
+                            initialNumToRender={8}//default 10
+                            windowSize={15}//default 21
+                            extraData={this.state.flatListRender}
+                            keyExtractor={(item, key) => key}
+                            renderItem={({ item }) => (
+                                <List.Item
+                                    title={item.member_name}
+                                    titleStyle={[this.props.themeData.XLtheme, this.props.ftszData.paragraph]}
+                                    descriptionStyle={[this.props.themeData.Stheme, this.props.ftszData.paragraph]}
+                                    description={
+                                        `${item.church_name}  主:${item.sumL}/月 家:${item.sumH}/月 排:${item.sumG}/月`
+                                    }
+                                />
+                            )}
+                        />
+                    </View>}
                 <Portal>
                     <Dialog
                         visible={this.state.modeOp}
@@ -258,7 +387,7 @@ class VisitScreen extends Component {
                         <Dialog.Actions>
                             <Button
                                 labelStyle={[this.props.ftszData.paragraph, this.props.themeData.XLtheme]}
-                                onPress={() => this.setState({ modeOp: false })}
+                                onPress={() => this.onFrequency()}
                             >OK</Button>
                         </Dialog.Actions>
                     </Dialog>
@@ -490,6 +619,75 @@ class VisitScreen extends Component {
                             >OK</Button>
                         </Dialog.Actions>
                     </Dialog>
+                    <Dialog
+                        visible={this.state.priorityOp}
+                        style={this.props.themeData.LthemeB}
+                        onDismiss={() => this.setState({ priorityOp: false })}>
+                        <Dialog.ScrollArea>
+                            <ScrollView contentContainerStyle={{ paddingTop: 24 }}>
+                                <Dialog.Content>
+                                    <Text style={[this.props.ftszData.paragraph, this.props.themeData.Stheme]}>
+                                        {this.props.lanData.priority}</Text>
+                                    <View style={styles.selectGroup}>
+                                        <Button style={[{ margin: 5, borderRadius: 18 },
+                                        this.state.priority === '主>家>排' ? this.props.themeData.XLthemeB : this.props.themeData.SthemeB]}
+                                            labelStyle={[this.props.ftszData.button, this.props.themeData.Ltheme]}
+                                            onPress={() =>
+                                                this.setState({
+                                                    priority: '主>家>排', prioritySh: this.props.lanData.LoHoGr
+                                                })}
+                                        >{this.props.lanData.LoHoGr}</Button>
+                                        <Button style={[{ margin: 5, borderRadius: 18 },
+                                        this.state.priority === '主>排>家' ? this.props.themeData.XLthemeB : this.props.themeData.SthemeB]}
+                                            labelStyle={[this.props.ftszData.button, this.props.themeData.Ltheme]}
+                                            onPress={() =>
+                                                this.setState({
+                                                    priority: '主>排>家', prioritySh: this.props.lanData.LoGrHo
+                                                })}
+                                        >{this.props.lanData.LoGrHo}</Button>
+                                        <Button style={[{ margin: 5, borderRadius: 18 },
+                                        this.state.priority === '家>主>排' ? this.props.themeData.XLthemeB : this.props.themeData.SthemeB]}
+                                            labelStyle={[this.props.ftszData.button, this.props.themeData.Ltheme]}
+                                            onPress={() =>
+                                                this.setState({
+                                                    priority: '家>主>排', prioritySh: this.props.lanData.HoLoGr
+                                                })}
+                                        >{this.props.lanData.HoLoGr}</Button>
+                                        <Button style={[{ margin: 5, borderRadius: 18 },
+                                        this.state.priority === '家>排>主' ? this.props.themeData.XLthemeB : this.props.themeData.SthemeB]}
+                                            labelStyle={[this.props.ftszData.button, this.props.themeData.Ltheme]}
+                                            onPress={() =>
+                                                this.setState({
+                                                    priority: '家>排>主', prioritySh: this.props.lanData.HoGrLo
+                                                })}
+                                        >{this.props.lanData.HoGrLo}</Button>
+                                        <Button style={[{ margin: 5, borderRadius: 18 },
+                                        this.state.priority === '排>主>家' ? this.props.themeData.XLthemeB : this.props.themeData.SthemeB]}
+                                            labelStyle={[this.props.ftszData.button, this.props.themeData.Ltheme]}
+                                            onPress={() =>
+                                                this.setState({
+                                                    priority: '排>主>家', prioritySh: this.props.lanData.GrLoHo
+                                                })}
+                                        >{this.props.lanData.GrLoHo}</Button>
+                                        <Button style={[{ margin: 5, borderRadius: 18 },
+                                        this.state.priority === '排>家>主' ? this.props.themeData.XLthemeB : this.props.themeData.SthemeB]}
+                                            labelStyle={[this.props.ftszData.button, this.props.themeData.Ltheme]}
+                                            onPress={() =>
+                                                this.setState({
+                                                    priority: '排>家>主', prioritySh: this.props.lanData.GrHoLo
+                                                })}
+                                        >{this.props.lanData.GrHoLo}</Button>
+                                    </View>
+                                </Dialog.Content>
+                            </ScrollView>
+                        </Dialog.ScrollArea>
+                        <Dialog.Actions>
+                            <Button
+                                labelStyle={[this.props.ftszData.paragraph, this.props.themeData.XLtheme]}
+                                onPress={() => this.onPriority()}
+                            >OK</Button>
+                        </Dialog.Actions>
+                    </Dialog>
                 </Portal>
             </View>
         )
@@ -542,5 +740,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-evenly',
         alignItems: 'center',
         flexWrap: 'wrap',
+    },
+    pickerView: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        flexWrap: 'wrap',
+    },
+    actInd: {
+        height: "90%",
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 })

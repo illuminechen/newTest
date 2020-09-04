@@ -97,6 +97,13 @@ export default {
         threeperm: '2-3/month',
         oneperm: '1below/month',
         otherChLf: 'church life only',
+        priority:'priority',
+        LoHoGr: 'L>H>G',
+        LoGrHo: 'L>G>H',
+        HoLoGr: 'H>L>G',
+        HoGrLo: 'H>G>L',
+        GrLoHo: 'G>L>H',
+        GrHoLo: 'G>H>L',
     },
     zh: {
         //登入頁面
@@ -191,10 +198,17 @@ export default {
         elder: '年長',
 
         // 看望選單
-        lordTfreq: '主日頻率',
+        lordTfreq: '聚會頻率',
         fourperm: '4-5次/月',
         threeperm: '2-3次/月',
         oneperm: '1次以下/月',
         otherChLf: '僅召會生活',
+        priority: '排序順位',
+        LoHoGr: '主>家>排',
+        LoGrHo: '主>排>家',
+        HoLoGr: '家>主>排',
+        HoGrLo: '家>排>主',
+        GrLoHo: '排>主>家',
+        GrHoLo: '排>家>主',
     }
 }

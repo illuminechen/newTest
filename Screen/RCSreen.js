@@ -314,7 +314,6 @@ class RCScreen extends Component {
      * @param {number} origAtt - 原本是有來1或沒來0
      */
     rollCall = async (id, origAtt) => {
-        //console.log("rollCall", id, origAtt)
         origAtt === 0 ?
             await this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '1')
             : await this.props.rollCall(id, this.state.orderAcord, this.state.nowYear, this.state.nowDate, '0')
